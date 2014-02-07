@@ -15,7 +15,7 @@
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
  * @package appear.in WP
- * @version 1.0
+ * @version 1.1
  * @author UaMV
  * @copyright Copyright (c) 2013, UaMV
  * @link http://vandercar.net/wp/appear-in-wp
@@ -30,7 +30,7 @@ function _adump( $var = '' ) {
  * Define constants.
  */
 
-define( 'AIWP_VERSION', '1.0' );
+define( 'AIWP_VERSION', '1.1' );
 define( 'AIWP_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AIWP_DIR_URL', plugin_dir_url( __FILE__ ) );
 
