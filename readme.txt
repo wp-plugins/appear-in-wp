@@ -5,7 +5,7 @@ Donate link: http://vandercar.net/wp
 Tags: appear, in, video, chat, conference, webrtc
 Requires at least: 3.1
 Tested up to: 3.8
-Stable tag: 1.1
+Stable tag: 1.2
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
@@ -69,6 +69,10 @@ Silence is golden.
 
 == Changelog ==
 
+= 1.2 =
+* Minor readme edit to show correct version
+* Removed function used during development
+
 = 1.1 =
 * Adding repository images
 
@@ -76,6 +80,10 @@ Silence is golden.
 * Initial Release
 
 == Upgrade Notice ==
+
+= 1.2 =
+* Minor readme edit to show correct version
+* Removed function used during development
 
 = 1.0 =
 * Initial Release
