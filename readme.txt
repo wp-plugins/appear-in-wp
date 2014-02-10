@@ -1,0 +1,128 @@
+=== appear.in WP ===
+
+Contributors: UaMV
+Donate link: http://vandercar.net/wp
+Tags: appear, in, video, chat, conference, webrtc
+Requires at least: 3.1
+Tested up to: 3.8
+Stable tag: 1.3
+License: GPLv2 or later
+
+Adds appear.in rooms to your site via shortcode
+
+== Description ==
+
+The appear.in WP plugin harnesses the power of [appear.in](http://appear.in "appear.in") allowing site owners to embed secure peer-to-peer video chat rooms on a self-hosted WordPress site via the [appear_in] shortcode.
+
+= Shortcode =
+
+> **[appear_in]**<br /><br />
+> **[appear_in room="_custom-public-room-name_"]**<br />
+> **[appear_in type="_post,public,private_"]**<br />
+> **[appear_in post_invites="_0-7_" public_invites="_0-7_" private_invites="_0-7_"]**<br />
+
+= Settings =
+
+Custom settings for appear.in Wordpress are found on the Settings > Media admin page.
+
+* **Public Room Name:** define a public room name for default use in shortcode
+* **Enable/Disable email invitations upon entering room:** 0-7 invitations allowed
+
+The settings page includes the following basic usage stats per room type:
+
+* Number of rooms triggered
+* Number of invites sent
+* Number & percentage of invites accepted
+* Average number of participants per room
+
+If a public room name has not been explicitly defined in settings or shortcode, then the default public room expires daily.
+
+The 'post' room type will generate a public room with name of the current post.
+
+= Documentation =
+
+Documentation and sample implementation can also be found [here](http://vandercar.net/wp "appear.in WordPress Documentation").
+
+Learn more about [appear.in](http://appear.in "appear.in") - a product of [Telenor Digital AS](http://www.telenor.com/ "Telenor Digital") built with WebRTC technologies.
+
+_Note: As of 2.6.2014, the appear.in API is still in beta. You may encounter minor bugs with your rooms._
+
+= Functions =
+
+The following function can be used to include rooms:
+
+`aiwp_include( $args );`
+
+Default arguments:
+
+`$args = array(
+	'room' => '',
+	'type' => 'public',
+	'public_invites' => NULL,
+	'private_invites' => NULL,
+	'post_invites' => NULL,
+);`
+
+= Filters =
+
+`aiwp_public_room_button`
+`aiwp_private_room_button`
+`aiwp_unsupported_browser_message`
+`aiwp_public_invite_button`
+`aiwp_private_invite_button`
+`aiwp_public_invitation_subject`
+`aiwp_private_invitation_subject`
+`aiwp_public_invitation_message`
+`aiwp_private_invitation_message`
+
+== Installation ==
+
+1. Upload the `appear-in-wordpress` directory to `/wp-content/plugins/`
+1. Activate the plugin through the 'Plugins' menu in WordPress
+
+== Frequently Asked Questions ==
+
+Silence is golden.
+
+== Screenshots ==
+
+1. appear.in WordPress Settings
+
+== Changelog ==
+
+= 1.3 =
+* Refined filters
+* Added room type parameter to shortcode (defaults to public)
+* Removed allowed types from options
+* Added number of allowable invites parameter to shortcode
+* Added room type 'post'
+* Added 'aiwp_include' function for use in themes
+* Fixed call to included files
+
+= 1.2 =
+* Minor readme edit to show correct version
+* Removed function used during development
+
+= 1.1 =
+* Adding repository images
+
+= 1.0 =
+* Initial Release
+
+== Upgrade Notice ==
+
+= 1.3 =
+* Refined filters
+* Added room type parameter to shortcode (defaults to public)
+* Removed allowed types from options
+* Added number of allowable invites parameter to shortcode
+* Added room type 'post'
+* Added 'aiwp_include' function for use in themes
+* Fixed call to included files
+
+= 1.2 =
+* Minor readme edit to show correct version
+* Removed function used during development
+
+= 1.0 =
+* Initial Release
