@@ -32,7 +32,7 @@
 		display: block;
 		margin: 0;
 		border: 0;
-		background-color: #85ae9b;
+		background: #85ae9b;
 		border-radius: 0;
 		box-shadow: none;
 		text-shadow: none;
@@ -40,7 +40,7 @@
 
 	#aiwp-room-type-selection div button:hover,
 	#aiwp-current-room-type div button:hover {
-		background-color: #6c9e87;
+		background: #6c9e87;
 		border-radius: none;
 		box-shadow: none;
 		text-shadow: none;

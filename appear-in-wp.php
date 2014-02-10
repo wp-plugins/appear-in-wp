@@ -3,7 +3,7 @@
  * Plugin Name: appear.in WP
  * Plugin URI: http://vandercar.net/wp/appear-in-wp
  * Description: Adds appear.in rooms to your site via shortcode
- * Version: 1.2
+ * Version: 1.3
  * Author: UaMV
  * Author URI: http://vandercar.net
  *
@@ -15,7 +15,7 @@
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
  * @package appear.in WP
- * @version 1.2
+ * @version 1.3
  * @author UaMV
  * @copyright Copyright (c) 2013, UaMV
  * @link http://vandercar.net/wp/appear-in-wp
@@ -26,7 +26,7 @@
  * Define constants.
  */
 
-define( 'AIWP_VERSION', '1.2' );
+define( 'AIWP_VERSION', '1.3' );
 define( 'AIWP_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AIWP_DIR_URL', plugin_dir_url( __FILE__ ) );
 
@@ -41,7 +41,7 @@ is_admin() ? require_once AIWP_DIR_PATH . 'wp-side-notice/class-wp-side-notice.p
  * Get instance of class.
  */
 
-Appear_In_WordPress::get_instance();
+Appear_In_WP::get_instance();
 
 /**
  * Glance That Class
@@ -51,7 +51,7 @@ Appear_In_WordPress::get_instance();
  * @package Glance That
  * @author  UaMV
  */
-class Appear_In_WordPress {
+class Appear_In_WP {
 
 	/*---------------------------------------------------------------------------------*
 	 * Attributes
@@ -90,7 +90,7 @@ class Appear_In_WordPress {
 		$this->options = get_option( 'aiwp_settings', array() );
 
 		// if admin area, get instance of admin class
-		if ( is_admin() ) { Appear_In_WordPress_Admin::get_instance(); }
+		if ( is_admin() ) { Appear_In_WP_Admin::get_instance(); }
 		// else, check for shortcode presence and respond accordingly
 		else {
 			add_action( 'template_redirect', array( $this, 'respond_to_shortcode' ) );
@@ -111,8 +111,8 @@ class Appear_In_WordPress {
 		add_action( 'wp_ajax_nopriv_aiwp_session', array( &$this, 'count_session' ) );  // if not logged-in
 
 		// ajax action callback for counting accepted invitations
-		add_action( 'wp_ajax_aiwp_accepted_invite', array( &$this, 'count_accepted_invite' ) );  // if logged-in
-		add_action( 'wp_ajax_nopriv_aiwp_accepted_invite', array( &$this, 'count_accepted_invite' ) );  //if not logged-in
+		add_action( 'wp_ajax_aiwp_direct_session', array( &$this, 'count_direct_session' ) );  // if logged-in
+		add_action( 'wp_ajax_nopriv_aiwp_direct_session', array( &$this, 'count_direct_session' ) );  //if not logged-in
 
 	} // end __construct
 
@@ -212,7 +212,14 @@ class Appear_In_WordPress {
 		// extract the shortcode parameters
 		extract( shortcode_atts( array(
 			'room' => '',
+			'type' => 'public',
+			'public_invites' => NULL,
+			'private_invites' => NULL,
+			'post_invites' => NULL,
 		), $atts ) );
+
+		// push the shortcode defined rooom types to an array
+		$aiwp_room_types = explode( ',', str_replace( ' ', '', $type ) );
 
 		// get public room name from shortcode, otherwise from custom options, otherwise from plugins randomly assigned & daily dynamic name
 		if ( '' != $room ) {
@@ -223,40 +230,36 @@ class Appear_In_WordPress {
 			$custom_room_name = get_option( 'aiwp_public_room' );
 		}
 
-		$aiwp_public_invites_enabled = (int) $this->options['public_invites'] > 0 ? TRUE : FALSE;
-		$aiwp_private_invites_enabled = (int) $this->options['private_invites'] > 0 ? TRUE : FALSE;
+		// put allowable invites from shortcode into array
+		$invites = array(
+			'public' => $public_invites,
+			'private' => $private_invites,
+			'post' => $post_invites,
+			);
+
+		// if null, get from custom options
+		foreach ( $invites as $room_type => $invite_count ) {
+			if ( is_null( $invites[ $room_type ] ) ) {
+				$invites[ $room_type ] = $this->options['invites'][ $room_type ];
+			}
+		}
 
 		// build room selection wrapper
 		$html = '<div id="aiwp-room-type-selection">';
 
-			// display enter room buttons, depending on which types of rooms are to be displayed
-			if ( ! isset( $this->options['types'] ) || 'both' == $this->options['types'] ) {
-				$html .= '<div id="aiwp-public"><button id="aiwp-select-public-room" data-room-type="public" data-room-invites="';
-					$html .= $aiwp_public_invites_enabled ? 'enabled"' : 'disabled"';
-					$html .= '>' . apply_filters( 'aiwp_enter_public_room', 'Enter Public Room' ) . '</button>' . $this->invite_form( (int) $this->options['public_invites'], 'public' ) . '</div>';
-				$html .= '<div id="aiwp-private"><button id="aiwp-select-private-room" data-room-type="private" data-room-invites="';
-					$html .= $aiwp_private_invites_enabled ? 'enabled"' : 'disabled"';
-					$html .= '>' . apply_filters( 'aiwp_create_private_room', 'Create Private Room' ) . '</button>' . $this->invite_form( (int) $this->options['private_invites'], 'private' ) . '</div>';
-			} elseif ( 'public' == $this->options['types'] ) {
-				$html .= '<div id="aiwp-public"><button id="aiwp-select-public-room" data-room-type="public" data-room-invites="';
-					$html .= $aiwp_public_invites_enabled ? 'enabled"' : 'disabled"';
-					$html .= '>' . apply_filters( 'aiwp_enter_public_room', 'Enter Public Room' ) . '</button>' . $this->invite_form( (int) $this->options['public_invites'], 'public' ) . '</div>';
-			} elseif ( 'private' == $this->options['types'] ) {
-				$html .= '<div id="aiwp-private"><button id="aiwp-select-private-room" data-room-type="private" data-room-invites="';
-					$html .= $aiwp_private_invites_enabled ? 'enabled"' : 'disabled"';
-					$html .= '>' . apply_filters( 'aiwp_create_private_room', 'Create Private Room' ) . '</button>' . $this->invite_form( (int) $this->options['private_invites'], 'private' ) . '</div>';
+			foreach ( $aiwp_room_types as $room_type ) {
+
+				// display public room button, depending on which types of rooms are to be displayed
+				$html .= '<div id="aiwp-' . $room_type . '" style="width:' . ( 100 / count( $aiwp_room_types ) ) . '%"><button id="aiwp-select-' . $room_type . '-room" data-room-type="' . $room_type . '" data-room-invites="';
+					$html .= (int) $invites[ $room_type ] > 0 ? 'enabled"' : 'disabled"';
+					$html .= '>' . apply_filters( 'aiwp_' . $room_type . '_room_button', ucfirst( $room_type ) . ' Room' ) . '</button>' . $this->invite_form( (int) $invites[ $room_type ], $room_type ) . '</div>';
+			
 			}
 
 		$html .= '</div>';
 
-		// build current room wrapper
-		$html .= '<div id="aiwp-current-room-type">';
-			$html .= '<span id="aiwp-current-public" style="display:none;">' . apply_filters( 'aiwp_public_room', 'Public Room' ) . '</span>';
-			$html .= '<span id="aiwp-current-private" style="display:none;">' . apply_filters( 'aiwp_private_room', 'Private Room' ) . '</span>';
-		$html .= '</div>';
-
 		// build compatibility test result
-		$html .= '<span id="appearin-incompatibility" style="display:none;">' . apply_filters( 'aiwp_no_browser_support', 'It appears your browser is not capable of displaying this content. Try connecting with Chrome, Firefox, or Opera.' ) . '</span>';
+		$html .= '<span id="appearin-incompatibility" style="display:none;">' . apply_filters( 'aiwp_unsupported_browser_message', 'It appears your browser is not capable of displaying this content. Try connecting with Chrome, Firefox, or Opera.' ) . '</span>';
 
 		// include appearin iframe populated by API
 		$html .= '<iframe id="appearin-room" data-room-name="' . $custom_room_name . '" data-security="' . wp_create_nonce( 'aiwp-action-on_' . get_option( 'aiwp_public_room' ) ) . '"></iframe>';
@@ -281,7 +284,7 @@ class Appear_In_WordPress {
 			$html = '<div id="aiwp-' . $room_type . '-invite-form" style="display:none;">';
 
 				// include replacement button for invite submission and room entrance
-				$html .= '<button id="aiwp-send-' . $room_type . '-invites" data-room-type="' . $room_type . '" tabindex="12">' . apply_filters( 'aiwp_send_' . $room_type . '_invites', 'Send Invitations & Enter ' . ucfirst( $room_type ) . ' Room' ) . '</button>';
+				$html .= '<button id="aiwp-send-' . $room_type . '-invites" data-room-type="' . $room_type . '" tabindex="12">' . apply_filters( 'aiwp_' . $room_type . '_invite_button', 'Send Invitations & Enter ' . ucfirst( $room_type ) . ' Room' ) . '</button>';
 				
 				// inform of optional invites (delay hide with js)
 				$html .= '<span>Optionally Invite</span>';
@@ -359,13 +362,13 @@ class Appear_In_WordPress {
 				// build the message content
 				$message = 'You have been invited';
 				$message .= '' != $aiwp_username ? ' by ' . $aiwp_username : '';
-				$message .= ' to join a videochat happening now at ' . $aiwp_room_url . '?appearin=' . $aiwp_room;
+				$message .= ' to join a videochat happening now at ' . $aiwp_room_url . '?appear-in=' . $aiwp_room . '&aiwp-ref=invite';
 
 				// send each message separately
 				foreach ( $aiwp_invites as $email ) {
 					
 					// send the message
-					$email_sent = wp_mail( $email, apply_filters( 'aiwp_invitation_subject', 'Invitation to Appear In' ), apply_filters( 'aiwp_invitation_message', $message ), $header );
+					$email_sent = wp_mail( $email, apply_filters( 'aiwp_' . $aiwp_room_type . '_invitation_subject', 'Invitation to Appear In' ), apply_filters( 'aiwp_' . $aiwp_room_type . '_invitation_message', $message ), $header );
 					
 					// if send fails, return false triggering error message
 					// otherwise, add 1 to invite count stats
@@ -413,12 +416,23 @@ class Appear_In_WordPress {
 	 *
 	 * @since    1.0
 	 */
-	public function count_accepted_invite() {
+	public function count_direct_session() {
 		if ( check_ajax_referer( 'aiwp-action-on_' . get_option( 'aiwp_public_room' ), 'aiwp_security' ) ) {
+
 			$aiwp_room = $_POST['aiwp_room'];
-			$aiwp_room_type = strpos( ' ' . $aiwp_room, 'private-' ) > 0 ? 'private' : 'public';
+			$aiwp_ref = $_POST['aiwp_ref'];
+			if ( strpos( $aiwp_room, '://' ) > 0 ) {
+				$aiwp_room_type = 'post';
+			} elseif ( strpos( ' ' . $aiwp_room, 'private-' ) > 0 ) {
+				$aiwp_room_type = 'private';
+			} else {
+				$aiwp_room_type = 'public';
+			}
 			$aiwp_stats = get_option( 'aiwp_stats' );
-			$aiwp_stats[ $aiwp_room_type ]['invites_accepted'] ++;
+
+			if ( 'invite' == $aiwp_ref ) {
+				$aiwp_stats[ $aiwp_room_type ]['invites_accepted'] ++;
+			}
 			update_option( 'aiwp_stats', $aiwp_stats );
 			echo TRUE;
 		} else {
@@ -428,6 +442,38 @@ class Appear_In_WordPress {
 	}
 
 } // end class
+
+
+
+/**
+ * Call to include room form
+ */
+function aiwp_include( $args ) {
+
+	$aiwp_defaults = array(
+		'room' => '',
+		'type' => 'public',
+		'public_invites' => NULL,
+		'private_invites' => NULL,
+		'post_invites' => NULL,
+		);
+
+	$args = wp_parse_args( $args, $aiwp_defaults );
+
+	$shortcode = '[appear_in ';
+
+	foreach ( $args as $parameter => $value ) {
+		if ( ! empty( $value ) && ! is_null( $value ) ) {
+			$shortcode .= $parameter . '="' . $value . '" ';
+		}
+	}
+
+	$shortcode .= ']';
+
+	Appear_In_WP::add_stylesheets_and_javascript();
+	echo do_shortcode( $shortcode );
+
+}
 
 /**
  * Create a random room code

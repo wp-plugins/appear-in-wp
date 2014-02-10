@@ -10,14 +10,14 @@
  */
 
 /**
- * Appear_In_Admin
+ * Appear_In_WP_Admin
  *
  * Handles the admin section
  *
  * @package Appear In WordPress
  * @author  UaMV
  */
-class Appear_In_WordPress_Admin {
+class Appear_In_WP_Admin {
 
 	/*---------------------------------------------------------------------------------*
 	 * Attributes
@@ -58,20 +58,20 @@ class Appear_In_WordPress_Admin {
 		// load activation notice to guide users to the next step
 		add_action( 'admin_notices', array( $this, 'display_plugin_activation_message' ) );
 
+		// initialize stats on plugin activation
+		register_activation_hook( AIWP_DIR_PATH . 'appear-in-wp.php', array( $this, 'initialize_stats' ) );
+
 		// add notices on plugin activation
-		register_activation_hook( AIWP_DIR_PATH . 'appear-in-wordpress.php', array( $this, 'add_wpsn_notices' ) );
+		register_activation_hook( AIWP_DIR_PATH . 'appear-in-wp.php', array( $this, 'add_wpsn_notices' ) );
 
 		// schedule crons on plugin activation
-		register_activation_hook( AIWP_DIR_PATH . 'appear-in-wordpress.php', array( $this, 'schedule_cron' ) );
-
-		// initialize stats on plugin activation
-		register_activation_hook( AIWP_DIR_PATH . 'appear-in-wordpress.php', array( $this, 'initialize_stats' ) );
+		register_activation_hook( AIWP_DIR_PATH . 'appear-in-wp.php', array( $this, 'schedule_cron' ) );
 
 		// unschedule crons on plugin de-activation
-		register_deactivation_hook( AIWP_DIR_PATH . 'appear-in-wordpress.php', array( $this, 'unschedule_cron' ) );
+		register_deactivation_hook( AIWP_DIR_PATH . 'appear-in-wp.php', array( $this, 'unschedule_cron' ) );
 
 		// remove active plugin marker
-		register_deactivation_hook( AIWP_DIR_PATH . 'appear-in-wordpress.php', array( $this, 'remove_activation_marker' ) );
+		register_deactivation_hook( AIWP_DIR_PATH . 'appear-in-wp.php', array( $this, 'remove_activation_marker' ) );
 
 		// retrieve cutom plugin settings
 		$this->options = get_option( 'aiwp_settings', array() );
@@ -168,14 +168,15 @@ class Appear_In_WordPress_Admin {
 		$ai_stats = get_option( 'aiwp_stats' );
 
 		// if stats did not previously exist, initialize them
-		if ( '' == $ai_stats ) {
+		if ( '' == $ai_stats || (float) get_option( 'aiwp_db_version' ) < 1.4 ) {
 
 			$ai_initialize_stats = array(
 				'public'  => array( 'rooms_triggered' => 0, 'invites_sent' => 0, 'invites_accepted' => 0 ),
 				'private' => array( 'rooms_triggered' => 0, 'invites_sent' => 0, 'invites_accepted' => 0 ),
+				'post'    => array( 'rooms_triggered' => 0, 'invites_sent' => 0, 'invites_accepted' => 0 ),
 				);
 
-			add_option( 'aiwp_stats', $ai_initialize_stats );
+			update_option( 'aiwp_stats', $ai_initialize_stats );
 		}
 
 	} // end initialize_stats
@@ -240,7 +241,18 @@ class Appear_In_WordPress_Admin {
 
 		$aiwp_stats = get_option( 'aiwp_stats' );
 
-		$html = '<strong>Public Rooms</strong>';
+		$html = '<strong>Post Rooms</strong>';
+		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
+		$html .= '<strong>' . $aiwp_stats['post']['rooms_triggered'] . '</strong> rooms triggered';
+		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
+		$html .= '<strong>' . $aiwp_stats['post']['invites_accepted'] . ' of ' . $aiwp_stats['post']['invites_sent'] . '</strong> invites accepted';
+		$html .= ' <strong>' . round( 100 * ( $aiwp_stats['post']['invites_accepted'] / $aiwp_stats['post']['invites_sent'] ), 2 ) . '%</strong>';
+		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
+		$html .= '<strong>' . round( ( $aiwp_stats['post']['rooms_triggered'] + $aiwp_stats['post']['invites_accepted'] ) / $aiwp_stats['post']['rooms_triggered'], 2 ) . '</strong> average users per room';
+
+		$html .= '<br />';
+
+		$html .= '<strong>Public Rooms</strong>';
 		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
 		$html .= '<strong>' . $aiwp_stats['public']['rooms_triggered'] . '</strong> rooms triggered';
 		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
@@ -370,20 +382,7 @@ class Appear_In_WordPress_Admin {
 	public function display_settings() {
 
 		// build the fields
-		$html = '<fieldset>';
-
-		// allow types of rooms (both, public, private)
-		$html .= '<label>' . __( 'Allow:', 'aiwp-locale' );
-			$html .= ' <select id="appear_in_room_types" name="aiwp_settings[types]">';
-
-				$html .= '<option value="both" ' . selected( $this->options['types'], 'both', FALSE ) . '>' . __( 'Public & Private Rooms', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="public" ' . selected( $this->options['types'], 'public', FALSE ) . '>' . __( 'Public Room Only', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="private" ' . selected( $this->options['types'], 'private', FALSE ) . '>' . __( 'Private Rooms Only', 'aiwp-locale' ) . '</option>';
-
-			$html .= '</select>';
-		$html .= '</label>';
-
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp;';
+		$html .= '<fieldset>';
 
 		// allow default public room name
 		$html .= '<label>' . __( 'Public Room Name:', 'aiwp-locale' );
@@ -401,39 +400,55 @@ class Appear_In_WordPress_Admin {
 
 		$html .= '<nobr>';
 
-		$html .= __( 'the public room', 'aiwp-locale' );
-		$html .= ' <select id="appear_in_public_invites" name="aiwp_settings[public_invites]">';
+		$html .= __( 'a post room', 'aiwp-locale' );
+		$html .= ' <select id="appear_in_post_invites" name="aiwp_settings[invites][post]">';
 
-				$html .= '<option value="0" ' . selected( $this->options['public_invites'], '0', FALSE ) . '>' . __( '0', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="1" ' . selected( $this->options['public_invites'], '1', FALSE ) . '>' . __( '1', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="2" ' . selected( $this->options['public_invites'], '2', FALSE ) . '>' . __( '2', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="3" ' . selected( $this->options['public_invites'], '3', FALSE ) . '>' . __( '3', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="4" ' . selected( $this->options['public_invites'], '4', FALSE ) . '>' . __( '4', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="5" ' . selected( $this->options['public_invites'], '5', FALSE ) . '>' . __( '5', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="6" ' . selected( $this->options['public_invites'], '6', FALSE ) . '>' . __( '6', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="7" ' . selected( $this->options['public_invites'], '7', FALSE ) . '>' . __( '7', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="0" ' . selected( $this->options['invites']['post'], '0', FALSE ) . '>' . __( '0', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="1" ' . selected( $this->options['invites']['post'], '1', FALSE ) . '>' . __( '1', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="2" ' . selected( $this->options['invites']['post'], '2', FALSE ) . '>' . __( '2', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="3" ' . selected( $this->options['invites']['post'], '3', FALSE ) . '>' . __( '3', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="4" ' . selected( $this->options['invites']['post'], '4', FALSE ) . '>' . __( '4', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="5" ' . selected( $this->options['invites']['post'], '5', FALSE ) . '>' . __( '5', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="6" ' . selected( $this->options['invites']['post'], '6', FALSE ) . '>' . __( '6', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="7" ' . selected( $this->options['invites']['post'], '7', FALSE ) . '>' . __( '7', 'aiwp-locale' ) . '</option>';
 
 		$html .= '</select>';
 		
 		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp;';
 
-		$html .= __( 'the private room', 'aiwp-locale' );
-		$html .= ' <select id="appear_in_private_invites" name="aiwp_settings[private_invites]">';
+		$html .= __( 'the public room', 'aiwp-locale' );
+		$html .= ' <select id="appear_in_public_invites" name="aiwp_settings[invites][public]">';
 
-				$html .= '<option value="0" ' . selected( $this->options['private_invites'], '0', FALSE ) . '>' . __( '0', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="1" ' . selected( $this->options['private_invites'], '1', FALSE ) . '>' . __( '1', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="2" ' . selected( $this->options['private_invites'], '2', FALSE ) . '>' . __( '2', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="3" ' . selected( $this->options['private_invites'], '3', FALSE ) . '>' . __( '3', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="4" ' . selected( $this->options['private_invites'], '4', FALSE ) . '>' . __( '4', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="5" ' . selected( $this->options['private_invites'], '5', FALSE ) . '>' . __( '5', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="6" ' . selected( $this->options['private_invites'], '6', FALSE ) . '>' . __( '6', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="7" ' . selected( $this->options['private_invites'], '7', FALSE ) . '>' . __( '7', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="0" ' . selected( $this->options['invites']['public'], '0', FALSE ) . '>' . __( '0', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="1" ' . selected( $this->options['invites']['public'], '1', FALSE ) . '>' . __( '1', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="2" ' . selected( $this->options['invites']['public'], '2', FALSE ) . '>' . __( '2', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="3" ' . selected( $this->options['invites']['public'], '3', FALSE ) . '>' . __( '3', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="4" ' . selected( $this->options['invites']['public'], '4', FALSE ) . '>' . __( '4', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="5" ' . selected( $this->options['invites']['public'], '5', FALSE ) . '>' . __( '5', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="6" ' . selected( $this->options['invites']['public'], '6', FALSE ) . '>' . __( '6', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="7" ' . selected( $this->options['invites']['public'], '7', FALSE ) . '>' . __( '7', 'aiwp-locale' ) . '</option>';
+
+		$html .= '</select>';
+		
+		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp;';
+
+		$html .= __( 'a private room', 'aiwp-locale' );
+		$html .= ' <select id="appear_in_private_invites" name="aiwp_settings[invites][private]">';
+
+				$html .= '<option value="0" ' . selected( $this->options['invites']['private'], '0', FALSE ) . '>' . __( '0', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="1" ' . selected( $this->options['invites']['private'], '1', FALSE ) . '>' . __( '1', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="2" ' . selected( $this->options['invites']['private'], '2', FALSE ) . '>' . __( '2', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="3" ' . selected( $this->options['invites']['private'], '3', FALSE ) . '>' . __( '3', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="4" ' . selected( $this->options['invites']['private'], '4', FALSE ) . '>' . __( '4', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="5" ' . selected( $this->options['invites']['private'], '5', FALSE ) . '>' . __( '5', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="6" ' . selected( $this->options['invites']['private'], '6', FALSE ) . '>' . __( '6', 'aiwp-locale' ) . '</option>';
+				$html .= '<option value="7" ' . selected( $this->options['invites']['private'], '7', FALSE ) . '>' . __( '7', 'aiwp-locale' ) . '</option>';
 
 		$html .= '</select>';
 
 		$html .= '</nobr>';
 
-		$html .= '<br /><br /><br /><br />';
+		$html .= '<br /><br /><br /><br /><br />';
 
 		$html .= '</fieldset>';
 

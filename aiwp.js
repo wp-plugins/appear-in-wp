@@ -5,7 +5,8 @@ jQuery(document).ready(function( $ ) {
 
 	API.isAppearinCompatible(function (data) {
 		// check if roomname is define in URI
-		var aiRoom = lookToURIRoom( 'appearin' );
+		var aiRoom = lookToURI( 'appear-in' );
+		var aiRef = lookToURI( 'aiwp-ref' );
 
 		// if webRTC not supported show incompatibility message and hide room type selection
 		// otherwise, if room set in URI, set up room
@@ -23,10 +24,12 @@ jQuery(document).ready(function( $ ) {
 
         	// respond to server with accepted invite
         	$.post(ajaxurl, {
-        		action: 'aiwp_accepted_invite',
+        		action: 'aiwp_direct_session',
         		aiwp_room: aiRoom,
+        		aiwp_ref: aiRef,
         		aiwp_security: $('#appearin-room').data('security')
         	});
+
         } // end if
     });
 
@@ -54,12 +57,15 @@ jQuery(document).ready(function( $ ) {
     }
 
 	// Handle Room Selection
-	$('#aiwp-select-public-room,#aiwp-select-private-room').click( function () {
+	$('#aiwp-select-public-room,#aiwp-select-private-room,#aiwp-select-post-room').click( function () {
 			
 		var roomType = $(this).data('room-type');
 		var roomInvites = $(this).data('room-invites');
 		if ( 'disabled' == roomInvites ) {
-			if ( 'public' == roomType ) {
+			if ( 'post' == roomType ) {
+				var roomURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
+				launchAppearInRoom( roomURL, 'post' );
+			} else if ( 'public' == roomType ) {
 				var roomName = $('#appearin-room').attr('data-room-name');
 				launchAppearInRoom( roomName, 'public' );
 			} else if ( 'private' == roomType ) {
@@ -80,21 +86,23 @@ jQuery(document).ready(function( $ ) {
 	});
 
 	// set value attribute of input to inputted text when focus leaves input field
-	$('#aiwp-public input[type="text"], #aiwp-private input[type="text"]').blur( function() {
+	$(' #aiwp-post input[type="text"], #aiwp-public input[type="text"], #aiwp-private input[type="text"]').blur( function() {
 		var curval = $(this).val();
 		$(this).attr('value',curval);
 	});
 
 	// show next email text field when user begins typing in current email field
-	$('#aiwp-public input[type="text"], #aiwp-private input[type="text"]').keypress( function() {
+	$(' #aiwp-post input[type="text"], #aiwp-public input[type="text"], #aiwp-private input[type="text"]').keypress( function() {
 		$(this).next().show();
 	});
 
 	// Handle invitations
-	$('#aiwp-send-public-invites,#aiwp-send-private-invites').click( function() {
+	$('#aiwp-send-post-invites,#aiwp-send-public-invites,#aiwp-send-private-invites').click( function() {
 		var roomType = $(this).data('room-type');
 		var roomURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
-		if ( 'public' == roomType ) {
+		if ( 'post' == roomType ) {
+			var roomName = roomURL;
+		} else if ( 'public' == roomType ) {
 			var roomName = $('#appearin-room').data('room-name');
 		} else if ( 'private' == roomType ) {
 			var roomName = 'private-' + randomStringGenerator();
@@ -150,7 +158,7 @@ jQuery(document).ready(function( $ ) {
 
 	}
 
-	function lookToURIRoom(name){
+	function lookToURI(name){
 		if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search)) {
 			return decodeURIComponent(name[1]);
 		} else {
