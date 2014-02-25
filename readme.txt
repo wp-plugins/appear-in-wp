@@ -5,7 +5,7 @@ Donate link: http://vandercar.net/wp
 Tags: appear, in, video, chat, conference, webrtc
 Requires at least: 3.1
 Tested up to: 3.8
-Stable tag: 1.3
+Stable tag: 1.4
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
@@ -18,8 +18,9 @@ The appear.in WP plugin harnesses the power of [appear.in](http://appear.in "app
 
 > **[appear_in]**<br /><br />
 > **[appear_in room="_custom-public-room-name_"]**<br />
-> **[appear_in type="_post,public,private_"]**<br />
-> **[appear_in post_invites="_0-7_" public_invites="_0-7_" private_invites="_0-7_"]**<br />
+> **[appear_in type="_public,private,post_"]**<br />
+> **[appear_in public_invites="_0-7_" private_invites="_0-7_" post_invites="_0-7_" ]**<br />
+> **[appear_in public_room_button="" private_room_button="" post_room_button=""]
 
 = Settings =
 
@@ -56,24 +57,29 @@ The following function can be used to include rooms:
 Default arguments:
 
 `$args = array(
-	'room' => '',
-	'type' => 'public',
-	'public_invites' => NULL,
-	'private_invites' => NULL,
-	'post_invites' => NULL,
+	'room'                  => '',
+	'type'                  => 'public',
+	'public_room_button'    => 'Public Room',
+	'public_invite_button'  => 'Send Invitations & Enter Public Room',
+	'public_invites'        => NULL,
+	'private_room_button'   => 'Private Room',
+	'private_invite_button' => 'Send Invitations & Enter Private Room',
+	'private_invites'       => NULL,
+	'post_room_button'      => 'Post Room',
+	'post_invite_button'    => 'Send Invitations & Enter Post Room',
+	'post_invites'          => NULL,
 );`
 
 = Filters =
 
-`aiwp_public_room_button`
-`aiwp_private_room_button`
-`aiwp_unsupported_browser_message`
-`aiwp_public_invite_button`
-`aiwp_private_invite_button`
-`aiwp_public_invitation_subject`
-`aiwp_private_invitation_subject`
-`aiwp_public_invitation_message`
-`aiwp_private_invitation_message`
+`aiwp_unsupported_browser_message
+aiwp_room_button
+aiwp_invite_button
+aiwp_invitation_subject
+aiwp_invitation_message`
+
+Each of the last four filters accept a second variable of room type _(public, private, post)_.
+
 
 == Installation ==
 
@@ -89,6 +95,10 @@ Silence is golden.
 1. appear.in WordPress Settings
 
 == Changelog ==
+
+= 1.4 =
+* Modified & Refined filters
+* Added shortcode parameters for button text
 
 = 1.3 =
 * Refined filters
@@ -110,6 +120,9 @@ Silence is golden.
 * Initial Release
 
 == Upgrade Notice ==
+
+= 1.4 =
+Modified & Refined filters + Added shortcode parameters for button text
 
 = 1.3 =
 * Refined filters

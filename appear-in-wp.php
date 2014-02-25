@@ -3,7 +3,7 @@
  * Plugin Name: appear.in WP
  * Plugin URI: http://vandercar.net/wp/appear-in-wp
  * Description: Adds appear.in rooms to your site via shortcode
- * Version: 1.3
+ * Version: 1.4
  * Author: UaMV
  * Author URI: http://vandercar.net
  *
@@ -15,7 +15,7 @@
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
  * @package appear.in WP
- * @version 1.3
+ * @version 1.4
  * @author UaMV
  * @copyright Copyright (c) 2013, UaMV
  * @link http://vandercar.net/wp/appear-in-wp
@@ -26,7 +26,7 @@
  * Define constants.
  */
 
-define( 'AIWP_VERSION', '1.3' );
+define( 'AIWP_VERSION', '1.4' );
 define( 'AIWP_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AIWP_DIR_URL', plugin_dir_url( __FILE__ ) );
 
@@ -249,10 +249,13 @@ class Appear_In_WP {
 
 			foreach ( $aiwp_room_types as $room_type ) {
 
+				$room_button_text = isset( $atts[ $room_type . '_room_button' ] ) ? $atts[ $room_type . '_room_button' ] : ucfirst( $room_type ) . ' Room';
+				$invite_button_text = isset( $atts[ $room_type . '_invite_button' ] ) ? $atts[ $room_type . '_invite_button' ] : 'Send Invitations & Enter ' . ucfirst( $room_type ) . ' Room';
+
 				// display public room button, depending on which types of rooms are to be displayed
 				$html .= '<div id="aiwp-' . $room_type . '" style="width:' . ( 100 / count( $aiwp_room_types ) ) . '%"><button id="aiwp-select-' . $room_type . '-room" data-room-type="' . $room_type . '" data-room-invites="';
 					$html .= (int) $invites[ $room_type ] > 0 ? 'enabled"' : 'disabled"';
-					$html .= '>' . apply_filters( 'aiwp_' . $room_type . '_room_button', ucfirst( $room_type ) . ' Room' ) . '</button>' . $this->invite_form( (int) $invites[ $room_type ], $room_type ) . '</div>';
+					$html .= '>' . apply_filters( 'aiwp_room_button', $room_button_text, $room_type ) . '</button>' . $this->invite_form( (int) $invites[ $room_type ], $room_type, $invite_button_text ) . '</div>';
 			
 			}
 
@@ -275,7 +278,7 @@ class Appear_In_WP {
 	 *
 	 * @return   string   HTML content for invite form.
 	 */
-	public function invite_form( $invites = 0, $room_type = '' ) {
+	public function invite_form( $invites = 0, $room_type, $invite_button_text ) {
 
 		// if invites enabled for room type, then build a hidden form
 		// otherwise, include hidden content to trigger room launch
@@ -284,7 +287,7 @@ class Appear_In_WP {
 			$html = '<div id="aiwp-' . $room_type . '-invite-form" style="display:none;">';
 
 				// include replacement button for invite submission and room entrance
-				$html .= '<button id="aiwp-send-' . $room_type . '-invites" data-room-type="' . $room_type . '" tabindex="12">' . apply_filters( 'aiwp_' . $room_type . '_invite_button', 'Send Invitations & Enter ' . ucfirst( $room_type ) . ' Room' ) . '</button>';
+				$html .= '<button id="aiwp-send-' . $room_type . '-invites" data-room-type="' . $room_type . '" tabindex="12">' . apply_filters( 'aiwp_invite_button', $invite_button_text, $room_type ) . '</button>';
 				
 				// inform of optional invites (delay hide with js)
 				$html .= '<span>Optionally Invite</span>';
@@ -368,7 +371,7 @@ class Appear_In_WP {
 				foreach ( $aiwp_invites as $email ) {
 					
 					// send the message
-					$email_sent = wp_mail( $email, apply_filters( 'aiwp_' . $aiwp_room_type . '_invitation_subject', 'Invitation to Appear In' ), apply_filters( 'aiwp_' . $aiwp_room_type . '_invitation_message', $message ), $header );
+					$email_sent = wp_mail( $email, apply_filters( 'aiwp_invitation_subject', 'Invitation to Appear In', $aiwp_room_type ), apply_filters( 'aiwp_invitation_message', $message, $aiwp_room_type ), $header );
 					
 					// if send fails, return false triggering error message
 					// otherwise, add 1 to invite count stats
