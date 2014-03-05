@@ -3,7 +3,7 @@
  * Plugin Name: appear.in WP
  * Plugin URI: http://vandercar.net/wp/appear-in-wp
  * Description: Adds appear.in rooms to your site via shortcode
- * Version: 1.4
+ * Version: 1.5
  * Author: UaMV
  * Author URI: http://vandercar.net
  *
@@ -15,7 +15,7 @@
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
  * @package appear.in WP
- * @version 1.4
+ * @version 1.5
  * @author UaMV
  * @copyright Copyright (c) 2013, UaMV
  * @link http://vandercar.net/wp/appear-in-wp
@@ -26,7 +26,7 @@
  * Define constants.
  */
 
-define( 'AIWP_VERSION', '1.4' );
+define( 'AIWP_VERSION', '1.5' );
 define( 'AIWP_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AIWP_DIR_URL', plugin_dir_url( __FILE__ ) );
 
@@ -266,6 +266,7 @@ class Appear_In_WP {
 
 		// include appearin iframe populated by API
 		$html .= '<iframe id="appearin-room" data-room-name="' . $custom_room_name . '" data-security="' . wp_create_nonce( 'aiwp-action-on_' . get_option( 'aiwp_public_room' ) ) . '"></iframe>';
+		$html .= '<div id="appearin-room-label"></div>';
 
 		return $html;
 

@@ -148,6 +148,7 @@ jQuery(document).ready(function( $ ) {
 
 	function launchAppearInRoom( randomString, roomType ) {
 		var roomName = 'https://appear.in/' + randomString + '?lite';
+		var roomURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
 		// set the iframe source to load the room
 		var iframe = document.getElementById('appearin-room');
 		iframe.setAttribute('src', roomName);
@@ -155,6 +156,7 @@ jQuery(document).ready(function( $ ) {
 		$('#aiwp-room-type-selection').hide();
 		$('#appearin-current-' + roomType).show();
 		$('#appearin-room').css('height','700px');
+		$('#appearin-room-label').html(roomURL+'?appear-in='+roomName+'&aiwp-ref=invite');
 
 	}
 

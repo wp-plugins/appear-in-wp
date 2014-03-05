@@ -103,6 +103,27 @@ if ( ! class_exists( 'WP_Side_Notice' ) ) {
 		}
 
 		/**
+		 * Remove notices from the array.
+		 *
+		 * @since    1.0
+		 */
+		public function remove( $args = 'all' ) {
+
+			if ( 'all' == $args ) {
+				foreach ( $this->notices as $name => $notice ) {
+					unset( $this->notices[ $name ] );
+				}
+			} else {
+				foreach ( $args as $name ) {
+					unset( $this->notices[ $name ] );
+				}
+			}
+
+			update_option( $this->prefix . '_side_notices', $this->notices );
+
+		}
+
+		/**
 		 * Returns the active plugin notices for display on the settings page summary.
 		 *
 		 * @since    1.0

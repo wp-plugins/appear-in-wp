@@ -2,17 +2,17 @@
 
 Contributors: UaMV
 Donate link: http://vandercar.net/wp
-Tags: appear, in, video, chat, conference, webrtc
+Tags: appear, in, video, chat, conference, webrtc, teleconference
 Requires at least: 3.1
 Tested up to: 3.8
-Stable tag: 1.4
+Stable tag: 1.5
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
 
 == Description ==
 
-The appear.in WP plugin harnesses the power of [appear.in](http://appear.in "appear.in") allowing site owners to embed secure peer-to-peer video chat rooms on a self-hosted WordPress site via the [appear_in] shortcode.
+Harness the power of [appear.in](http://appear.in "appear.in") by embedding secure peer-to-peer video chat rooms on a self-hosted WordPress site via the [appear_in] shortcode.
 
 = Shortcode =
 
@@ -20,7 +20,8 @@ The appear.in WP plugin harnesses the power of [appear.in](http://appear.in "app
 > **[appear_in room="_custom-public-room-name_"]**<br />
 > **[appear_in type="_public,private,post_"]**<br />
 > **[appear_in public_invites="_0-7_" private_invites="_0-7_" post_invites="_0-7_" ]**<br />
-> **[appear_in public_room_button="" private_room_button="" post_room_button=""]
+> **[appear_in public_room_button="" private_room_button="" post_room_button=""]**<br />
+> **[appear_in public_invite_button="" private_invite_button="" post_invite_button=""]**
 
 = Settings =
 
@@ -96,6 +97,11 @@ Silence is golden.
 
 == Changelog ==
 
+= 1.5 =
+* Added display of local invitation URL
+* Updated side notice class
+* Readme edits
+
 = 1.4 =
 * Modified & Refined filters
 * Added shortcode parameters for button text
@@ -120,6 +126,9 @@ Silence is golden.
 * Initial Release
 
 == Upgrade Notice ==
+
+= 1.5 =
+Added display of local invitation URL + Updated side notice class
 
 = 1.4 =
 Modified & Refined filters + Added shortcode parameters for button text
