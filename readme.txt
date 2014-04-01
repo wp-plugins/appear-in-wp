@@ -5,7 +5,7 @@ Donate link: http://vandercar.net/wp
 Tags: appear, in, video, chat, conference, webrtc, teleconference
 Requires at least: 3.1
 Tested up to: 3.8
-Stable tag: 1.5
+Stable tag: 1.6
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
@@ -97,6 +97,9 @@ Silence is golden.
 
 == Changelog ==
 
+= 1.6 =
+* Fixed various PHP notices
+
 = 1.5 =
 * Added display of local invitation URL
 * Updated side notice class
@@ -126,6 +129,9 @@ Silence is golden.
 * Initial Release
 
 == Upgrade Notice ==
+
+= 1.6 =
+Fixed various PHP notices
 
 = 1.5 =
 Added display of local invitation URL + Updated side notice class

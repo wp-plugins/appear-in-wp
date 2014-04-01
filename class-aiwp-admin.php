@@ -78,6 +78,7 @@ class Appear_In_WP_Admin {
 
 		// initialize custom room name
 		$this->options['room'] = isset( $this->options['room'] ) ? $this->options['room'] : '';
+		$this->options['invites'] = isset( $this->options['invites'] ) ? $this->options['invites'] : array( 'post' => 0, 'public' => 0, 'private' => 0 );
 
 		// register the settings
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
@@ -241,14 +242,21 @@ class Appear_In_WP_Admin {
 
 		$aiwp_stats = get_option( 'aiwp_stats' );
 
+		$post_invites_percent = $aiwp_stats['post']['invites_sent'] == 0 ? 0 : round( 100 * ( $aiwp_stats['post']['invites_accepted'] / $aiwp_stats['post']['invites_sent'] ), 2 );
+		$public_invites_percent = $aiwp_stats['public']['invites_sent'] == 0 ? 0 : round( 100 * ( $aiwp_stats['public']['invites_accepted'] / $aiwp_stats['public']['invites_sent'] ), 2 );
+		$private_invites_percent = $aiwp_stats['private']['invites_sent'] == 0 ? 0 : round( 100 * ( $aiwp_stats['private']['invites_accepted'] / $aiwp_stats['private']['invites_sent'] ), 2 );
+		$post_room_avg = $aiwp_stats['post']['rooms_triggered'] == 0 ? 0 : round( ( $aiwp_stats['post']['rooms_triggered'] + $aiwp_stats['post']['invites_accepted'] ) / $aiwp_stats['post']['rooms_triggered'], 2 );
+		$public_room_avg = $aiwp_stats['public']['rooms_triggered'] == 0 ? 0 : round( ( $aiwp_stats['public']['rooms_triggered'] + $aiwp_stats['public']['invites_accepted'] ) / $aiwp_stats['public']['rooms_triggered'], 2 );
+		$private_room_avg = $aiwp_stats['private']['rooms_triggered'] == 0 ? 0 : round( ( $aiwp_stats['private']['rooms_triggered'] + $aiwp_stats['private']['invites_accepted'] ) / $aiwp_stats['private']['rooms_triggered'], 2 );
+
 		$html = '<strong>Post Rooms</strong>';
 		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
 		$html .= '<strong>' . $aiwp_stats['post']['rooms_triggered'] . '</strong> rooms triggered';
 		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
 		$html .= '<strong>' . $aiwp_stats['post']['invites_accepted'] . ' of ' . $aiwp_stats['post']['invites_sent'] . '</strong> invites accepted';
-		$html .= ' <strong>' . round( 100 * ( $aiwp_stats['post']['invites_accepted'] / $aiwp_stats['post']['invites_sent'] ), 2 ) . '%</strong>';
+		$html .= ' <strong>' . $post_invites_percent . '%</strong>';
 		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . round( ( $aiwp_stats['post']['rooms_triggered'] + $aiwp_stats['post']['invites_accepted'] ) / $aiwp_stats['post']['rooms_triggered'], 2 ) . '</strong> average users per room';
+		$html .= '<strong>' . $post_room_avg . '</strong> average users per room';
 
 		$html .= '<br />';
 
@@ -257,9 +265,9 @@ class Appear_In_WP_Admin {
 		$html .= '<strong>' . $aiwp_stats['public']['rooms_triggered'] . '</strong> rooms triggered';
 		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
 		$html .= '<strong>' . $aiwp_stats['public']['invites_accepted'] . ' of ' . $aiwp_stats['public']['invites_sent'] . '</strong> invites accepted';
-		$html .= ' <strong>' . round( 100 * ( $aiwp_stats['public']['invites_accepted'] / $aiwp_stats['public']['invites_sent'] ), 2 ) . '%</strong>';
+		$html .= ' <strong>' . $public_invites_percent . '%</strong>';
 		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . round( ( $aiwp_stats['public']['rooms_triggered'] + $aiwp_stats['public']['invites_accepted'] ) / $aiwp_stats['public']['rooms_triggered'], 2 ) . '</strong> average users per room';
+		$html .= '<strong>' . $public_room_avg . '</strong> average users per room';
 
 		$html .= '<br />';
 
@@ -268,9 +276,9 @@ class Appear_In_WP_Admin {
 		$html .= '<strong>' . $aiwp_stats['private']['rooms_triggered'] . '</strong> rooms triggered';
 		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
 		$html .= '<strong>' . $aiwp_stats['private']['invites_accepted'] . ' of ' . $aiwp_stats['private']['invites_sent'] . '</strong> invites accepted';
-		$html .= ' <strong>' . round( 100 * ( $aiwp_stats['private']['invites_accepted'] / $aiwp_stats['private']['invites_sent'] ), 2 ) . '%</strong>';
+		$html .= ' <strong>' . $private_invites_percent . '%</strong>';
 		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . round( ( $aiwp_stats['private']['rooms_triggered'] + $aiwp_stats['private']['invites_accepted'] ) / $aiwp_stats['private']['rooms_triggered'], 2 ) . '</strong> average users per room';
+		$html .= '<strong>' . $private_room_avg . '</strong> average users per room';
 
 		return $html;
 
@@ -343,7 +351,7 @@ class Appear_In_WP_Admin {
 		// First, register a settings section
 		add_settings_section( 'aiwp', 'appear.in', array( $this, 'display_section' ), 'media' );
 
-		// Then, register the settings for the Pressgram fields
+		// Then, register the settings for the fields
 		register_setting( 'media', 'aiwp_settings' );
 
 		// Now introduce the settings fields
@@ -382,7 +390,7 @@ class Appear_In_WP_Admin {
 	public function display_settings() {
 
 		// build the fields
-		$html .= '<fieldset>';
+		$html = '<fieldset>';
 
 		// allow default public room name
 		$html .= '<label>' . __( 'Public Room Name:', 'aiwp-locale' );
