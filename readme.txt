@@ -4,8 +4,8 @@ Contributors: UaMV
 Donate link: http://vandercar.net/wp
 Tags: appear, in, video, chat, conference, webrtc, teleconference
 Requires at least: 3.1
-Tested up to: 3.8
-Stable tag: 1.6
+Tested up to: 3.9.1
+Stable tag: 1.8
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
@@ -13,6 +13,8 @@ Adds appear.in rooms to your site via shortcode
 == Description ==
 
 Harness the power of [appear.in](http://appear.in "appear.in") by embedding secure peer-to-peer video chat rooms on a self-hosted WordPress site via the [appear_in] shortcode.
+
+View an [example implementation](http://vandercar.net/wp/appear-in-wp).
 
 = Shortcode =
 
@@ -97,6 +99,15 @@ Silence is golden.
 
 == Changelog ==
 
+= 1.8 =
+* Readme edit
+
+= 1.7 =
+* Added confirmation to leave once a session has been triggered
+* CSS edits
+* Added link to the non-embedded, full room at appear.in
+* Fixed call to ajaxurl in certain situations.
+
 = 1.6 =
 * Fixed various PHP notices
 
@@ -130,8 +141,11 @@ Silence is golden.
 
 == Upgrade Notice ==
 
+= 1.7 =
+Adds prevention against accidentally leaving an active session.
+
 = 1.6 =
-Fixed various PHP notices
+This update fixes various PHP notices
 
 = 1.5 =
 Added display of local invitation URL + Updated side notice class
