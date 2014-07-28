@@ -11,6 +11,9 @@ jQuery(document).ready(function( $ ) {
 		// if webRTC not supported show incompatibility message and hide room type selection
 		// otherwise, if room set in URI, set up room
 		// otherwise, do nothing
+		if ( data.isSupported ) {
+			$('#webrtc-compatability-tester').hide();
+		}
         if ( !data.isSupported ) {
             $('#appearin-incompatibility').show();
             $('#aiwp-room-type-selection').hide();
@@ -147,16 +150,26 @@ jQuery(document).ready(function( $ ) {
 		});
 
 	function launchAppearInRoom( randomString, roomType ) {
-		var roomName = 'https://appear.in/' + randomString + '?lite';
+		if ( randomString.indexOf('appear.in') >= 0 ) {
+			var roomName = randomString.replace('?lite','');
+		} else {
+			var roomName = 'https://appear.in/' + randomString;
+		}
+		var roomNameLite = roomName + '?lite';
 		var roomURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
 		// set the iframe source to load the room
 		var iframe = document.getElementById('appearin-room');
-		iframe.setAttribute('src', roomName);
+		iframe.setAttribute('src', roomNameLite);
 
 		$('#aiwp-room-type-selection').hide();
 		$('#appearin-current-' + roomType).show();
 		$('#appearin-room').css('height','700px');
-		$('#appearin-room-label').html(roomURL+'?appear-in='+roomName+'&aiwp-ref=invite');
+		$('#appearin-room-label').html(roomURL+'?appear-in='+roomNameLite+'&aiwp-ref=invite');
+		$('#appearin-room-label-external').html('<a href="'+roomName+'" target="_self">Visit Full Room</a>');
+
+		window.onbeforeunload = function(){
+		    return 'Active sessions at ' + roomName + ' will be ended.'; 
+		}
 
 	}
 
