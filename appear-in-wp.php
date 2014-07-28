@@ -3,7 +3,7 @@
  * Plugin Name: appear.in WP
  * Plugin URI: http://vandercar.net/wp/appear-in-wp
  * Description: Adds appear.in rooms to your site via shortcode
- * Version: 1.7
+ * Version: 1.8
  * Author: UaMV
  * Author URI: http://vandercar.net
  *
