@@ -4,3 +4,8 @@
 	height: 6em;
 	margin-right: 15px;
 }
+
+#aiwp-button-color > span {
+	position: relative;
+	top: -9px;
+}
