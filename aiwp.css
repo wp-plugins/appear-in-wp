@@ -1,17 +1,16 @@
 #appearin-room {
 	width: 100%;
 	height: 0px;
+	margin-bottom: 0;
 }
 
-#aiwp-room-type-selection,
-#aiwp-current-room-type {
+#aiwp-room-type-selection {
 	text-align: center;
 	font-weight: bold;
 	font-size: 125%;
 }
 
-	#aiwp-room-type-selection div,
-	#aiwp-current-room-type div {
+	#aiwp-room-type-selection div {
 		vertical-align: top;
 		display: inline-block;
 		width: 50%;
@@ -24,44 +23,45 @@
 	}
 
 	#aiwp-room-type-selection div button,
-	#aiwp-room-type-selection div div button,
-	#aiwp-current-room-type div button {
+	#aiwp-room-type-selection div div button {
 		color: white;
 		width: 100%;
 		padding: 1.5em;
 		display: block;
 		margin: 0;
 		border: 0;
-		background: #85ae9b;
 		border-radius: 0;
 		box-shadow: none;
 		text-shadow: none;
 	}
 
-	#aiwp-room-type-selection div button:hover,
-	#aiwp-current-room-type div button:hover {
-		background: #6c9e87;
+	#aiwp-room-type-selection div button:hover {
 		border-radius: none;
 		box-shadow: none;
 		text-shadow: none;
 	}
 
-	#aiwp-room-type-selection div span,
-	#aiwp-current-room-type div span {
-		display: block;
-		padding: .5em;
-		border-top: 1px solid transparent;
+	.aiwp-invite-buttons {
+		text-align: center;
+		font-weight: bold;
 	}
 
-	#aiwp-room-type-selection div input,
-	#aiwp-current-room-type div input {
-		border-color: #ccc;
-		border-top: 0;
-		display: block;
-		width: calc( 100% - 1em - 2px );
-		padding: .5em;
-		margin: 0;
+	.aiwp-invite-buttons a {
+		display: inline-block;
+		width: 33%;
+		text-decoration: none;
+		font-size: 100%;
 	}
-	#aiwp-room-type-selection div input:nth-child(3) {
-		border-top: 1px solid #ccc;
+
+	#aiwp-room-type-selection a {
+		font-size: 75%;
 	}
+
+	#appearin-room-labels {
+		text-align: center;
+		font-size: 75%;
+	}
+		#appearin-room-label-external a {
+			display: block;
+			text-decoration: none;
+		}
