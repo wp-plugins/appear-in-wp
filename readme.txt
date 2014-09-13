@@ -5,7 +5,7 @@ Donate link: http://vandercar.net/wp
 Tags: appear, in, video, chat, conference, webrtc, teleconference
 Requires at least: 3.1
 Tested up to: 4.0
-Stable tag: 2.0
+Stable tag: 2.1
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
@@ -73,6 +73,9 @@ Silence is golden.
 1. appear.in WordPress Settings
 
 == Changelog ==
+
+= 2.1 =
+* A fix when embedding on secure sites
 
 = 2.0 =
 * Replaced email invitation form with social invitations (Facebook, Twitter, Email)

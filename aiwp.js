@@ -3,20 +3,12 @@
  */
 jQuery(document).ready(function( $ ) {
 
-	API.isAppearinCompatible(function (data) {
+	if ( 'https:' === location.protocol ) {
 		// check if roomname is define in URI
 		var aiRoom = lookToURI( 'room' );
 
-		// if webRTC not supported show incompatibility message and hide room type selection
-		// otherwise, if room set in URI, set up room
-		// otherwise, do nothing
-		if ( data.isSupported ) {
-			$('#webrtc-compatability-tester').hide();
-		}
-        if ( !data.isSupported ) {
-            $('#appearin-incompatibility').show();
-            $('#aiwp-room-type-selection').hide();
-        } else if ( '' != aiRoom ) {
+		$('#webrtc-compatability-tester').hide();
+        if ( '' != aiRoom ) {
 
         	// hide room type selection
         	$('#aiwp-room-type-selection').hide();
@@ -25,7 +17,31 @@ jQuery(document).ready(function( $ ) {
         	launchAppearInRoom( aiRoom );
 
         } // end if
-    });
+	} else {
+		API.isAppearinCompatible(function (data) {
+			// check if roomname is define in URI
+			var aiRoom = lookToURI( 'room' );
+
+			// if webRTC not supported show incompatibility message and hide room type selection
+			// otherwise, if room set in URI, set up room
+			// otherwise, do nothing
+			if ( data.isSupported ) {
+				$('#webrtc-compatability-tester').hide();
+			}
+	        if ( !data.isSupported ) {
+	            $('#appearin-incompatibility').show();
+	            $('#aiwp-room-type-selection').hide();
+	        } else if ( '' != aiRoom ) {
+
+	        	// hide room type selection
+	        	$('#aiwp-room-type-selection').hide();
+
+	        	// launch room
+	        	launchAppearInRoom( aiRoom );
+
+	        } // end if
+	    });
+	}
 
 	function randomStringGenerator() {
         // predefine the alphabet used
