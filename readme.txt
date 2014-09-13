@@ -4,8 +4,8 @@ Contributors: UaMV
 Donate link: http://vandercar.net/wp
 Tags: appear, in, video, chat, conference, webrtc, teleconference
 Requires at least: 3.1
-Tested up to: 3.8
-Stable tag: 1.6
+Tested up to: 4.0
+Stable tag: 2.1
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
@@ -19,23 +19,14 @@ Harness the power of [appear.in](http://appear.in "appear.in") by embedding secu
 > **[appear_in]**<br /><br />
 > **[appear_in room="_custom-public-room-name_"]**<br />
 > **[appear_in type="_public,private,post_"]**<br />
-> **[appear_in public_invites="_0-7_" private_invites="_0-7_" post_invites="_0-7_" ]**<br />
-> **[appear_in public_room_button="" private_room_button="" post_room_button=""]**<br />
-> **[appear_in public_invite_button="" private_invite_button="" post_invite_button=""]**
+> **[appear_in public_room_button="" private_room_button="" post_room_button=""]**
 
 = Settings =
 
 Custom settings for appear.in Wordpress are found on the Settings > Media admin page.
 
+* **Room Button Color**
 * **Public Room Name:** define a public room name for default use in shortcode
-* **Enable/Disable email invitations upon entering room:** 0-7 invitations allowed
-
-The settings page includes the following basic usage stats per room type:
-
-* Number of rooms triggered
-* Number of invites sent
-* Number & percentage of invites accepted
-* Average number of participants per room
 
 If a public room name has not been explicitly defined in settings or shortcode, then the default public room expires daily.
 
@@ -43,11 +34,9 @@ The 'post' room type will generate a public room with name of the current post.
 
 = Documentation =
 
-Documentation and sample implementation can also be found [here](http://vandercar.net/wp "appear.in WordPress Documentation").
+Documentation and implementation can be viewed [here](http://vandercar.net/wp/appear-in-wp).
 
 Learn more about [appear.in](http://appear.in "appear.in") - a product of [Telenor Digital AS](http://www.telenor.com/ "Telenor Digital") built with WebRTC technologies.
-
-_Note: As of 2.6.2014, the appear.in API is still in beta. You may encounter minor bugs with your rooms._
 
 = Functions =
 
@@ -61,26 +50,14 @@ Default arguments:
 	'room'                  => '',
 	'type'                  => 'public',
 	'public_room_button'    => 'Public Room',
-	'public_invite_button'  => 'Send Invitations & Enter Public Room',
-	'public_invites'        => NULL,
 	'private_room_button'   => 'Private Room',
-	'private_invite_button' => 'Send Invitations & Enter Private Room',
-	'private_invites'       => NULL,
 	'post_room_button'      => 'Post Room',
-	'post_invite_button'    => 'Send Invitations & Enter Post Room',
-	'post_invites'          => NULL,
 );`
 
 = Filters =
 
 `aiwp_unsupported_browser_message
-aiwp_room_button
-aiwp_invite_button
-aiwp_invitation_subject
-aiwp_invitation_message`
-
-Each of the last four filters accept a second variable of room type _(public, private, post)_.
-
+aiwp_room_button`
 
 == Installation ==
 
@@ -96,6 +73,23 @@ Silence is golden.
 1. appear.in WordPress Settings
 
 == Changelog ==
+
+= 2.1 =
+* A fix when embedding on secure sites
+
+= 2.0 =
+* Replaced email invitation form with social invitations (Facebook, Twitter, Email)
+* Removed stats
+* Added option to select button color
+
+= 1.8 =
+* Readme edit
+
+= 1.7 =
+* Added confirmation to leave once a session has been triggered
+* CSS edits
+* Added link to the non-embedded, full room at appear.in
+* Fixed call to ajaxurl in certain situations.
 
 = 1.6 =
 * Fixed various PHP notices
@@ -130,8 +124,14 @@ Silence is golden.
 
 == Upgrade Notice ==
 
+= 2.0 =
+Be sure to set your button color with the added option.
+
+= 1.7 =
+Adds prevention against accidentally leaving an active session.
+
 = 1.6 =
-Fixed various PHP notices
+This update fixes various PHP notices
 
 = 1.5 =
 Added display of local invitation URL + Updated side notice class

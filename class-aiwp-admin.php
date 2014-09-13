@@ -52,14 +52,13 @@ class Appear_In_WP_Admin {
 	 */
 	private function __construct() {
 
+		global $pagenow;
+
 		// check if plugin has updated and respond accordingly
 		add_action( 'admin_init', array( $this, 'check_plugin_update' ) );
 
 		// load activation notice to guide users to the next step
 		add_action( 'admin_notices', array( $this, 'display_plugin_activation_message' ) );
-
-		// initialize stats on plugin activation
-		register_activation_hook( AIWP_DIR_PATH . 'appear-in-wp.php', array( $this, 'initialize_stats' ) );
 
 		// add notices on plugin activation
 		register_activation_hook( AIWP_DIR_PATH . 'appear-in-wp.php', array( $this, 'add_wpsn_notices' ) );
@@ -73,15 +72,16 @@ class Appear_In_WP_Admin {
 		// remove active plugin marker
 		register_deactivation_hook( AIWP_DIR_PATH . 'appear-in-wp.php', array( $this, 'remove_activation_marker' ) );
 
-		// retrieve cutom plugin settings
-		$this->options = get_option( 'aiwp_settings', array() );
+		if ( 'options-media.php' == $pagenow || 'options.php' == $pagenow ) {
+			// retrieve custom plugin settings
+			$this->options = get_option( 'aiwp_settings', array() );
 
-		// initialize custom room name
-		$this->options['room'] = isset( $this->options['room'] ) ? $this->options['room'] : '';
-		$this->options['invites'] = isset( $this->options['invites'] ) ? $this->options['invites'] : array( 'post' => 0, 'public' => 0, 'private' => 0 );
+			// initialize custom room name
+			$this->options['room'] = isset( $this->options['room'] ) ? $this->options['room'] : '';
 
-		// register the settings
-		add_action( 'admin_init', array( $this, 'register_settings' ) );
+			// register the settings
+			add_action( 'admin_init', array( $this, 'register_settings' ) );
+		}
 
 		// call to enqueue admin scripts and styles
 		add_action( 'admin_enqueue_scripts', array( $this, 'add_stylesheets_and_javascript' ) );
@@ -159,30 +159,6 @@ class Appear_In_WP_Admin {
 	} // end check_plugin_update
 
 	/**
-	 * Initialize the stats
-	 *
-	 * @since    1.0
-	 */
-	public function initialize_stats() {
-
-		// retrieve the stats
-		$ai_stats = get_option( 'aiwp_stats' );
-
-		// if stats did not previously exist, initialize them
-		if ( '' == $ai_stats || (float) get_option( 'aiwp_db_version' ) < 1.4 ) {
-
-			$ai_initialize_stats = array(
-				'public'  => array( 'rooms_triggered' => 0, 'invites_sent' => 0, 'invites_accepted' => 0 ),
-				'private' => array( 'rooms_triggered' => 0, 'invites_sent' => 0, 'invites_accepted' => 0 ),
-				'post'    => array( 'rooms_triggered' => 0, 'invites_sent' => 0, 'invites_accepted' => 0 ),
-				);
-
-			update_option( 'aiwp_stats', $ai_initialize_stats );
-		}
-
-	} // end initialize_stats
-
-	/**
 	 * Define WP Side Notices for use in plugin
 	 *
 	 * @since    1.0
@@ -212,16 +188,10 @@ class Appear_In_WP_Admin {
 				'style' => array( 'height' => '72px', 'color' => '#85ae9b', 'icon' => 'f240' ),
 				'location' => array( 'options-media.php' ),
 				),
-			'ai-stats' => array(
-				'name' => 'ai-stats',
-				'trigger' => TRUE,
-				'time' => time() - 5,
-				'dismiss' => 'none',
-				'content' => '',
-				'style' => array( 'height' => '130px', 'color' => '#85ae9b', 'icon' => 'f185' ),
-				'location' => array( 'options-media.php' ),
-				),
 			);
+
+		// remove the old notices
+		method_exists( 'WP_Side_Notice', 'remove' ) ? $wpsn->remove() : FALSE;
 		
 		// Add each notice
 		foreach ( $aiwp_notices as $notice => $args ) {
@@ -232,57 +202,6 @@ class Appear_In_WP_Admin {
 		update_option( 'aiwp_db_version', AIWP_VERSION );
 		
 	} // end add_wpsn_notices
-
-	/**
-	 * Add stats to the content section of stats notice.
-	 *
-	 * @since    1.0
-	 */
-	public function add_stats_content( $content, $notice, $current_user ) {
-
-		$aiwp_stats = get_option( 'aiwp_stats' );
-
-		$post_invites_percent = $aiwp_stats['post']['invites_sent'] == 0 ? 0 : round( 100 * ( $aiwp_stats['post']['invites_accepted'] / $aiwp_stats['post']['invites_sent'] ), 2 );
-		$public_invites_percent = $aiwp_stats['public']['invites_sent'] == 0 ? 0 : round( 100 * ( $aiwp_stats['public']['invites_accepted'] / $aiwp_stats['public']['invites_sent'] ), 2 );
-		$private_invites_percent = $aiwp_stats['private']['invites_sent'] == 0 ? 0 : round( 100 * ( $aiwp_stats['private']['invites_accepted'] / $aiwp_stats['private']['invites_sent'] ), 2 );
-		$post_room_avg = $aiwp_stats['post']['rooms_triggered'] == 0 ? 0 : round( ( $aiwp_stats['post']['rooms_triggered'] + $aiwp_stats['post']['invites_accepted'] ) / $aiwp_stats['post']['rooms_triggered'], 2 );
-		$public_room_avg = $aiwp_stats['public']['rooms_triggered'] == 0 ? 0 : round( ( $aiwp_stats['public']['rooms_triggered'] + $aiwp_stats['public']['invites_accepted'] ) / $aiwp_stats['public']['rooms_triggered'], 2 );
-		$private_room_avg = $aiwp_stats['private']['rooms_triggered'] == 0 ? 0 : round( ( $aiwp_stats['private']['rooms_triggered'] + $aiwp_stats['private']['invites_accepted'] ) / $aiwp_stats['private']['rooms_triggered'], 2 );
-
-		$html = '<strong>Post Rooms</strong>';
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . $aiwp_stats['post']['rooms_triggered'] . '</strong> rooms triggered';
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . $aiwp_stats['post']['invites_accepted'] . ' of ' . $aiwp_stats['post']['invites_sent'] . '</strong> invites accepted';
-		$html .= ' <strong>' . $post_invites_percent . '%</strong>';
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . $post_room_avg . '</strong> average users per room';
-
-		$html .= '<br />';
-
-		$html .= '<strong>Public Rooms</strong>';
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . $aiwp_stats['public']['rooms_triggered'] . '</strong> rooms triggered';
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . $aiwp_stats['public']['invites_accepted'] . ' of ' . $aiwp_stats['public']['invites_sent'] . '</strong> invites accepted';
-		$html .= ' <strong>' . $public_invites_percent . '%</strong>';
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . $public_room_avg . '</strong> average users per room';
-
-		$html .= '<br />';
-
-		$html .= '<strong>Private Rooms</strong>';
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . $aiwp_stats['private']['rooms_triggered'] . '</strong> rooms triggered';
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . $aiwp_stats['private']['invites_accepted'] . ' of ' . $aiwp_stats['private']['invites_sent'] . '</strong> invites accepted';
-		$html .= ' <strong>' . $private_invites_percent . '%</strong>';
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp';
-		$html .= '<strong>' . $private_room_avg . '</strong> average users per room';
-
-		return $html;
-
-	}
 
 	/**
 	 * Schedules the cron for expiring and resetting a daily public room name.
@@ -337,6 +256,11 @@ class Appear_In_WP_Admin {
 	 */
 	public function add_stylesheets_and_javascript() {
 
+		//wp_enqueue_script( 'wp-color-picker' );
+        // load the minified version of custom script
+        wp_enqueue_script( 'aiwp-admin-js', AIWP_DIR_URL . 'aiwp-admin.js', array( 'jquery', 'wp-color-picker' ), AIWP_VERSION, true );
+        wp_enqueue_style( 'wp-color-picker' );
+
 		wp_enqueue_style( 'aiwp-admin-style', AIWP_DIR_URL . 'aiwp-admin.css', array(), AIWP_VERSION, 'screen' );
 
 	}
@@ -352,7 +276,7 @@ class Appear_In_WP_Admin {
 		add_settings_section( 'aiwp', 'appear.in', array( $this, 'display_section' ), 'media' );
 
 		// Then, register the settings for the fields
-		register_setting( 'media', 'aiwp_settings' );
+		register_setting( 'media', 'aiwp_settings', array( $this, 'validate_options' ) );
 
 		// Now introduce the settings fields
 		add_settings_field(
@@ -375,8 +299,6 @@ class Appear_In_WP_Admin {
 		// get the aiwp side notices setting height of 500px
 		$notices = new WP_Side_Notice( 'aiwp', 700 );
 
-		add_filter( 'ai-stats_side_notice_content', array( $this, 'add_stats_content' ), 10, 3 );
-
 		// display the notices
 		$notices->display();
 
@@ -392,6 +314,13 @@ class Appear_In_WP_Admin {
 		// build the fields
 		$html = '<fieldset>';
 
+		// add button color picker
+		$html .= '<label id="aiwp-button-color"><span>' . __( 'Room Buttons: ', 'aiwp-locale' ) . '</span>';
+			$html .= '<input type="text" id="appear_in_button_color" name="aiwp_settings[color]" value="' . $this->options['color'] . '"></input>';
+		$html .= '</label>';
+
+		$html .= '<br />';
+
 		// allow default public room name
 		$html .= '<label>' . __( 'Public Room Name:', 'aiwp-locale' );
 			$html .= ' <input type="text" id="appear_in_room" name="aiwp_settings[room]" value="' . $this->options['room'] . '"></input>';
@@ -401,67 +330,49 @@ class Appear_In_WP_Admin {
 
 		$html .= ' <span class="description">' . __( '(if not defined here or in shortcode, public room is given random name that expires daily)' , 'aiwp-locale' ) . '</span>';
 
-		$html .= '<br /><br />';
-
-		// allow some number of invites for public and private rooms
-		$html .= 'Enable some number of email invitations upon entering...&nbsp;&nbsp;&nbsp;';
-
-		$html .= '<nobr>';
-
-		$html .= __( 'a post room', 'aiwp-locale' );
-		$html .= ' <select id="appear_in_post_invites" name="aiwp_settings[invites][post]">';
-
-				$html .= '<option value="0" ' . selected( $this->options['invites']['post'], '0', FALSE ) . '>' . __( '0', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="1" ' . selected( $this->options['invites']['post'], '1', FALSE ) . '>' . __( '1', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="2" ' . selected( $this->options['invites']['post'], '2', FALSE ) . '>' . __( '2', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="3" ' . selected( $this->options['invites']['post'], '3', FALSE ) . '>' . __( '3', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="4" ' . selected( $this->options['invites']['post'], '4', FALSE ) . '>' . __( '4', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="5" ' . selected( $this->options['invites']['post'], '5', FALSE ) . '>' . __( '5', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="6" ' . selected( $this->options['invites']['post'], '6', FALSE ) . '>' . __( '6', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="7" ' . selected( $this->options['invites']['post'], '7', FALSE ) . '>' . __( '7', 'aiwp-locale' ) . '</option>';
-
-		$html .= '</select>';
-		
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp;';
-
-		$html .= __( 'the public room', 'aiwp-locale' );
-		$html .= ' <select id="appear_in_public_invites" name="aiwp_settings[invites][public]">';
-
-				$html .= '<option value="0" ' . selected( $this->options['invites']['public'], '0', FALSE ) . '>' . __( '0', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="1" ' . selected( $this->options['invites']['public'], '1', FALSE ) . '>' . __( '1', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="2" ' . selected( $this->options['invites']['public'], '2', FALSE ) . '>' . __( '2', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="3" ' . selected( $this->options['invites']['public'], '3', FALSE ) . '>' . __( '3', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="4" ' . selected( $this->options['invites']['public'], '4', FALSE ) . '>' . __( '4', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="5" ' . selected( $this->options['invites']['public'], '5', FALSE ) . '>' . __( '5', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="6" ' . selected( $this->options['invites']['public'], '6', FALSE ) . '>' . __( '6', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="7" ' . selected( $this->options['invites']['public'], '7', FALSE ) . '>' . __( '7', 'aiwp-locale' ) . '</option>';
-
-		$html .= '</select>';
-		
-		$html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp;';
-
-		$html .= __( 'a private room', 'aiwp-locale' );
-		$html .= ' <select id="appear_in_private_invites" name="aiwp_settings[invites][private]">';
-
-				$html .= '<option value="0" ' . selected( $this->options['invites']['private'], '0', FALSE ) . '>' . __( '0', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="1" ' . selected( $this->options['invites']['private'], '1', FALSE ) . '>' . __( '1', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="2" ' . selected( $this->options['invites']['private'], '2', FALSE ) . '>' . __( '2', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="3" ' . selected( $this->options['invites']['private'], '3', FALSE ) . '>' . __( '3', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="4" ' . selected( $this->options['invites']['private'], '4', FALSE ) . '>' . __( '4', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="5" ' . selected( $this->options['invites']['private'], '5', FALSE ) . '>' . __( '5', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="6" ' . selected( $this->options['invites']['private'], '6', FALSE ) . '>' . __( '6', 'aiwp-locale' ) . '</option>';
-				$html .= '<option value="7" ' . selected( $this->options['invites']['private'], '7', FALSE ) . '>' . __( '7', 'aiwp-locale' ) . '</option>';
-
-		$html .= '</select>';
-
-		$html .= '</nobr>';
-
-		$html .= '<br /><br /><br /><br /><br />';
-
 		$html .= '</fieldset>';
 
 		echo $html;
 
 	} // end display_settings
+
+	public function validate_options( $fields ) { 
+		 
+		$valid_fields = $fields;
+		 
+		// Validate Background Color
+		$color = trim( $fields['color'] );
+		$color = strip_tags( stripslashes( $color ) );
+		 
+		// Check if is a valid hex color
+		if( FALSE === $this->check_color( $color ) ) {
+		 
+		    // Set the error message
+		    add_settings_error( 'aiwp_settings', 'aiwp_color_error', 'Insert a valid color for appear.in button', 'error' ); // $setting, $code, $message, $type
+		     
+		    // Get the previous valid value
+		    $valid_fields['color'] = $this->options['color'];
+		 
+		} else {
+		 
+		    $valid_fields['color'] = $color;  
+		 
+		}
+		 
+		return apply_filters( 'validate_options', $valid_fields, $fields);
+	
+	}
+
+	/**
+	* Function that will check if value is a valid HEX color.
+	*/
+	public function check_color( $value ) { 
+		 
+		if ( preg_match( '/^#[a-f0-9]{6}$/i', $value ) ) { // if user insert a HEX color with #     
+		    return true;
+		}
+		 
+		return false;
+	}
 
 } // end class
