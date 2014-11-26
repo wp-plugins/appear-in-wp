@@ -3,7 +3,7 @@
  * Plugin Name: appear.in WP
  * Plugin URI: http://vandercar.net/wp/appear-in-wp
  * Description: Adds appear.in rooms to your site via shortcode
- * Version: 2.1
+ * Version: 2.2
  * Author: UaMV
  * Author URI: http://vandercar.net
  *
@@ -15,7 +15,7 @@
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
  * @package appear.in WP
- * @version 2.1
+ * @version 2.2
  * @author UaMV
  * @copyright Copyright (c) 2013, UaMV
  * @link http://vandercar.net/wp/appear-in-wp
@@ -26,7 +26,7 @@
  * Define constants.
  */
 
-define( 'AIWP_VERSION', '2.1' );
+define( 'AIWP_VERSION', '2.2' );
 define( 'AIWP_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AIWP_DIR_URL', plugin_dir_url( __FILE__ ) );
 ! defined( 'AIWP_SHOW_INVITE' ) ? define( 'AIWP_SHOW_INVITE', TRUE ) : FALSE;
@@ -197,7 +197,8 @@ class Appear_In_WP {
 		}
 
 		// build room selection wrapper
-		// Add styling for iconset
+		// add styling for iconset
+		$text_color = $this->is_color_light( $this->options['color'] ) ? 'black' : 'white';
 		$html = '<style type="text/css">
 					#aiwp-room-type-selection div button,
 					#aiwp-room-type-selection div div button {
@@ -205,6 +206,10 @@ class Appear_In_WP {
 					}			
 					#aiwp-room-type-selection div button:hover {
 						background: ' . $this->hex_color_mod( $this->options['color'], -16 ) . ';
+					}
+					#aiwp-room-type-selection div button,
+					#aiwp-room-type-selection div div button {
+						color: ' . $text_color . ';
 					}
 				</style>';
 
@@ -280,6 +285,26 @@ class Appear_In_WP {
 	 
 		return '#'.implode($rgb);
 	}
+
+	/**
+     * Returns whether or not given color is considered "light"
+     * @param string|Boolean $color
+     * @return boolean
+     * @link https://github.com/mexitek/phpColors
+     */
+    public function is_color_light( $color = FALSE ) {
+
+        // Get our color
+        $color = ($color) ? $color : $this->_hex;
+        
+        // Calculate straight from rbg
+        $r = hexdec($color[0].$color[1]);
+        $g = hexdec($color[2].$color[3]);
+        $b = hexdec($color[4].$color[5]);
+        
+        return (( $r*299 + $g*587 + $b*114 )/1000 > 130);
+        
+    }
 
 } // end class
 
