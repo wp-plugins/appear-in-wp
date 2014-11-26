@@ -5,7 +5,7 @@ Donate link: http://vandercar.net/wp
 Tags: appear, in, video, chat, conference, webrtc, teleconference
 Requires at least: 3.1
 Tested up to: 4.0
-Stable tag: 2.1
+Stable tag: 2.2
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
@@ -20,6 +20,8 @@ Harness the power of [appear.in](http://appear.in "appear.in") by embedding secu
 > **[appear_in room="_custom-public-room-name_"]**<br />
 > **[appear_in type="_public,private,post_"]**<br />
 > **[appear_in public_room_button="" private_room_button="" post_room_button=""]**
+
+Set a custom public room name, specify which room buttons are shown on a page, and/or change the button text.
 
 = Settings =
 
@@ -74,6 +76,12 @@ Silence is golden.
 
 == Changelog ==
 
+= 2.2 =
+* Fix display of notices in admin
+* Fixes invitation URLs when using default permalink structure
+* Auto-scrolls browser to the room when visiting from an invite
+* Checks brightness of button color and sets text color accordingly
+
 = 2.1 =
 * A fix when embedding on secure sites
 
@@ -123,6 +131,9 @@ Silence is golden.
 * Initial Release
 
 == Upgrade Notice ==
+
+= 2.2 =
+Fixes & features
 
 = 2.0 =
 Be sure to set your button color with the added option.

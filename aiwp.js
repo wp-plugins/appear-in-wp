@@ -3,8 +3,14 @@
  */
 jQuery(document).ready(function( $ ) {
 
+	if ( '' != lookToURI( 'room' ) ) {
+		$( window ).on( 'load', function() {
+			window.location.hash = 'appearin-room';
+		});
+	}
+
 	if ( 'https:' === location.protocol ) {
-		// check if roomname is define in URI
+		// check if roomname is defined in URI
 		var aiRoom = lookToURI( 'room' );
 
 		$('#webrtc-compatability-tester').hide();
@@ -14,7 +20,7 @@ jQuery(document).ready(function( $ ) {
         	$('#aiwp-room-type-selection').hide();
 
         	// launch room
-        	launchAppearInRoom( aiRoom );
+        	launchAppearInRoom( aiRoom, 'invite' );
 
         } // end if
 	} else {
@@ -37,7 +43,7 @@ jQuery(document).ready(function( $ ) {
 	        	$('#aiwp-room-type-selection').hide();
 
 	        	// launch room
-	        	launchAppearInRoom( aiRoom );
+	        	launchAppearInRoom( aiRoom, 'invite' );
 
 	        } // end if
 	    });
@@ -74,25 +80,33 @@ jQuery(document).ready(function( $ ) {
 
 		if ( 'post' == roomType ) {
 			var roomURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
-			launchAppearInRoom( roomURL, 'post' );
+			launchAppearInRoom( roomURL );
 		} else if ( 'public' == roomType ) {
 			var roomName = $('#appearin-room').attr('data-room-name');
-			launchAppearInRoom( roomName, 'public' );
+			launchAppearInRoom( roomName );
 		} else if ( 'private' == roomType ) {
 			var randomString = 'private-' + randomStringGenerator();
-			launchAppearInRoom( randomString, 'private' );
+			launchAppearInRoom( randomString );
 		}
 
 	});
 
-	function launchAppearInRoom( randomString, roomType ) {
+	function launchAppearInRoom( randomString, origin ) {
 		if ( randomString.indexOf('appear.in') >= 0 ) {
 			var roomName = randomString.replace('?lite','');
 		} else {
 			var roomName = 'appear.in/' + randomString;
 		}
 		var roomNameLite = roomName + '?lite';
-		var roomURL = window.location.host + window.location.pathname;
+		if ( '/' != window.location.pathname ) {
+			var roomURL = window.location.host + window.location.pathname;
+		} else if ( '' != window.location.search ) {
+			var roomURL = window.location.host + window.location.search;
+			var n = roomURL.indexOf('?room=');
+			roomURL = roomURL.substring(0, n != -1 ? n : roomURL.length);
+		} else {
+			var roomURL = window.location.host
+		}
 		// set the iframe source to load the room
 		var iframe = document.getElementById('appearin-room');
 		iframe.setAttribute('src', window.location.protocol + "//" + roomNameLite);

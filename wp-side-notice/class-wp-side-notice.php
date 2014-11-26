@@ -60,7 +60,7 @@ if ( ! class_exists( 'WP_Side_Notice' ) ) {
 		 *
 		 * @since     1.0
 		 */
-		public function __construct( $prefix, $height = '200' ) {
+		public function __construct( $prefix, $height = 200 ) {
 
 			$this->prefix = $prefix;
 
@@ -154,7 +154,7 @@ if ( ! class_exists( 'WP_Side_Notice' ) ) {
 			update_user_meta( $current_user->ID, $this->prefix . '_user_side_notices', $user_notices );
 
 			// Set the variable that will hold the html
-			$html = '<div class="wpsn-outer-container" style="height:' . $this->height . '">';
+			$html = '<div class="wpsn-outer-container" style="height:' . $this->height . 'px">';
 			
 			// Loop though the notices
 			foreach ( $this->notices as $name => $notice ) {
