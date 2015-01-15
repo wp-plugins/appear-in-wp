@@ -4,8 +4,8 @@ Contributors: UaMV
 Donate link: http://vandercar.net/wp
 Tags: appear, in, video, chat, conference, webrtc, teleconference
 Requires at least: 3.1
-Tested up to: 4.0
-Stable tag: 2.1
+Tested up to: 4.1
+Stable tag: 2.3
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
@@ -19,7 +19,11 @@ Harness the power of [appear.in](http://appear.in "appear.in") by embedding secu
 > **[appear_in]**<br /><br />
 > **[appear_in room="_custom-public-room-name_"]**<br />
 > **[appear_in type="_public,private,post_"]**<br />
-> **[appear_in public_room_button="" private_room_button="" post_room_button=""]**
+> **[appear_in public_room_button="" private_room_button="" post_room_button=""]**<br />
+> **[appear_in position="_bottom,inline_"]**<br />
+> **[appear_in height="_int_"]**
+
+Set a custom public room name, specify which room buttons are shown on a page, change the button text, determine where rooms will be displayed, and set height of inline rooms.
 
 = Settings =
 
@@ -74,6 +78,18 @@ Silence is golden.
 
 == Changelog ==
 
+= 2.3 =
+* Adds shortcode option to position room – defaults to bottom fixed
+* Allows toggling visibility of active rooms
+* Adds shortcode option to set height of inline room
+* Overlays invite buttons on room
+
+= 2.2 =
+* Fix display of notices in admin
+* Fixes invitation URLs when using default permalink structure
+* Auto-scrolls browser to the room when visiting from an invite
+* Checks brightness of button color and sets text color accordingly
+
 = 2.1 =
 * A fix when embedding on secure sites
 
@@ -123,6 +139,12 @@ Silence is golden.
 * Initial Release
 
 == Upgrade Notice ==
+
+= 2.3 =
+Note that rooms will be repositioned when active unless position="inline" is explicitly included in shortcode + Other visibility & display changes
+
+= 2.2 =
+Fixes & features
 
 = 2.0 =
 Be sure to set your button color with the added option.
