@@ -136,7 +136,7 @@ jQuery(document).ready(function( $ ) {
 		if ( 'left' == $('#aiwp-container').data('position') ) {
 			$('body').animate({marginLeft: '-=380px' }, 600);
 			$('#aiwp-container').animate({height: '275px',width:'100%'}, 600);
-			$('#appearin-room').animate({height: '275px'}, 600);
+			$('#appearin-room').animate({height: '235px'}, 600);
 		}
 		$(this).hide();
 		$('#aiwp-move-left').show();

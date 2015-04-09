@@ -5,7 +5,7 @@ Donate link: http://vandercar.net/wp
 Tags: appear, in, video, chat, conference, webrtc, teleconference
 Requires at least: 3.1
 Tested up to: 4.2
-Stable tag: 2.4
+Stable tag: 2.5
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
@@ -20,12 +20,12 @@ Harness the power of [appear.in](http://appear.in "appear.in") by embedding secu
 
 = Shortcode Attributes =
 > **room="_custom-public-room-name_"**<br />
-> **type="_public,private,post_"]** _(default: public)_<br />
-> **public_room_button=""** _(default: Public Room)_<br />
-> **private_room_button=""** _(default: Private Room)_<br />
-> **post_room_button=""]** _(default: Post Room)_<br />
-> **position="_left,bottom,inline_"]** _(default: left)_<br />
-> **height="_int_"]**
+> **type="_public,private,post_"** (default: public)<br />
+> **public_room_button=""** (default: Public Room)<br />
+> **private_room_button=""** (default: Private Room)<br />
+> **post_room_button=""** (default: Post Room)<br />
+> **position="_left,bottom,inline_"** (default: left)<br />
+> **height="_int_"**
 
 Set a custom public room name, specify which room buttons are shown on a page, change the button text, determine where rooms will be displayed, and set height of inline rooms.
 
@@ -76,8 +76,8 @@ aiwp_room_button`
 
 = Constants =
 
-`AIWP_SHOW_TOGGLE`
-`AIWP_SHOW_INVITE`
+`AIWP_SHOW_TOGGLE
+AIWP_SHOW_INVITE`
 
 == Installation ==
 
@@ -93,6 +93,9 @@ Silence is golden.
 1. appear.in WordPress Settings
 
 == Changelog ==
+
+= 2.5 =
+* Fix for hidden controls when toggling position
 
 = 2.4 =
 * Utilizes new API calls
@@ -161,6 +164,9 @@ Silence is golden.
 * Initial Release
 
 == Upgrade Notice ==
+
+= 2.5 =
+* Fix for hidden controls when toggling position
 
 = 2.4 =
 Note that the new default position of rooms is set to be fixed left. This has been successfully tested with some themes. Some themes will have issues requiring custom CSS. Adds toggling of position and provides cleaner UI.
