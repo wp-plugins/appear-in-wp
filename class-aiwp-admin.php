@@ -297,7 +297,7 @@ class Appear_In_WP_Admin {
 	public function display_section() {
 
 		// get the aiwp side notices setting height of 500px
-		$notices = new WP_Side_Notice( 'aiwp', 700 );
+		$notices = new WP_Side_Notice( 'aiwp', 150 );
 
 		// display the notices
 		$notices->display();
@@ -345,7 +345,7 @@ class Appear_In_WP_Admin {
 		$color = strip_tags( stripslashes( $color ) );
 		 
 		// Check if is a valid hex color
-		if( FALSE === $this->check_color( $color ) ) {
+		if( FALSE === $this->is_color( $color ) ) {
 		 
 		    // Set the error message
 		    add_settings_error( 'aiwp_settings', 'aiwp_color_error', 'Insert a valid color for appear.in button', 'error' ); // $setting, $code, $message, $type
@@ -366,7 +366,7 @@ class Appear_In_WP_Admin {
 	/**
 	* Function that will check if value is a valid HEX color.
 	*/
-	public function check_color( $value ) { 
+	public function is_color( $value ) { 
 		 
 		if ( preg_match( '/^#[a-f0-9]{6}$/i', $value ) ) { // if user insert a HEX color with #     
 		    return true;
