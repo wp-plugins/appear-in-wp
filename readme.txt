@@ -4,8 +4,8 @@ Contributors: UaMV
 Donate link: http://vandercar.net/wp
 Tags: appear, in, video, chat, conference, webrtc, teleconference
 Requires at least: 3.1
-Tested up to: 4.0
-Stable tag: 2.1
+Tested up to: 4.2
+Stable tag: 2.4
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
@@ -16,10 +16,18 @@ Harness the power of [appear.in](http://appear.in "appear.in") by embedding secu
 
 = Shortcode =
 
-> **[appear_in]**<br /><br />
-> **[appear_in room="_custom-public-room-name_"]**<br />
-> **[appear_in type="_public,private,post_"]**<br />
-> **[appear_in public_room_button="" private_room_button="" post_room_button=""]**
+> **[appear_in]**
+
+= Shortcode Attributes =
+> **room="_custom-public-room-name_"**<br />
+> **type="_public,private,post_"]** _(default: public)_<br />
+> **public_room_button=""** _(default: Public Room)_<br />
+> **private_room_button=""** _(default: Private Room)_<br />
+> **post_room_button=""]** _(default: Post Room)_<br />
+> **position="_left,bottom,inline_"]** _(default: left)_<br />
+> **height="_int_"]**
+
+Set a custom public room name, specify which room buttons are shown on a page, change the button text, determine where rooms will be displayed, and set height of inline rooms.
 
 = Settings =
 
@@ -31,6 +39,12 @@ Custom settings for appear.in Wordpress are found on the Settings > Media admin 
 If a public room name has not been explicitly defined in settings or shortcode, then the default public room expires daily.
 
 The 'post' room type will generate a public room with name of the current post.
+
+= Features =
+
+Button for toggling room visibility.
+Button for toggling room position.
+Buttons for inviting others via Twitter, Facebook, and email.
 
 = Documentation =
 
@@ -52,6 +66,7 @@ Default arguments:
 	'public_room_button'    => 'Public Room',
 	'private_room_button'   => 'Private Room',
 	'post_room_button'      => 'Post Room',
+	'position'              => 'left',
 );`
 
 = Filters =
@@ -59,9 +74,14 @@ Default arguments:
 `aiwp_unsupported_browser_message
 aiwp_room_button`
 
+= Constants =
+
+`AIWP_SHOW_TOGGLE`
+`AIWP_SHOW_INVITE`
+
 == Installation ==
 
-1. Upload the `appear-in-wordpress` directory to `/wp-content/plugins/`
+1. Upload the `appear-in-wp` directory to `/wp-content/plugins/`
 1. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==
@@ -73,6 +93,24 @@ Silence is golden.
 1. appear.in WordPress Settings
 
 == Changelog ==
+
+= 2.4 =
+* Utilizes new API calls
+* Adds option to position room fied to left (new default)
+* Adds option to toggle room position between bottom and left
+* Repositions plugin function buttons
+
+= 2.3 =
+* Adds shortcode option to position room – defaults to bottom fixed
+* Allows toggling visibility of active rooms
+* Adds shortcode option to set height of inline room
+* Overlays invite buttons on room
+
+= 2.2 =
+* Fix display of notices in admin
+* Fixes invitation URLs when using default permalink structure
+* Auto-scrolls browser to the room when visiting from an invite
+* Checks brightness of button color and sets text color accordingly
 
 = 2.1 =
 * A fix when embedding on secure sites
@@ -123,6 +161,15 @@ Silence is golden.
 * Initial Release
 
 == Upgrade Notice ==
+
+= 2.4 =
+Note that the new default position of rooms is set to be fixed left. This has been successfully tested with some themes. Some themes will have issues requiring custom CSS. Adds toggling of position and provides cleaner UI.
+
+= 2.3 =
+Note that rooms will be repositioned when active unless position="inline" is explicitly included in shortcode + Other visibility & display changes
+
+= 2.2 =
+Fixes & features
 
 = 2.0 =
 Be sure to set your button color with the added option.

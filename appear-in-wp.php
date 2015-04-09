@@ -3,7 +3,7 @@
  * Plugin Name: appear.in WP
  * Plugin URI: http://vandercar.net/wp/appear-in-wp
  * Description: Adds appear.in rooms to your site via shortcode
- * Version: 2.1
+ * Version: 2.4
  * Author: UaMV
  * Author URI: http://vandercar.net
  *
@@ -15,7 +15,7 @@
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
  * @package appear.in WP
- * @version 2.1
+ * @version 2.4
  * @author UaMV
  * @copyright Copyright (c) 2013, UaMV
  * @link http://vandercar.net/wp/appear-in-wp
@@ -26,9 +26,10 @@
  * Define constants.
  */
 
-define( 'AIWP_VERSION', '2.1' );
+define( 'AIWP_VERSION', '2.4' );
 define( 'AIWP_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AIWP_DIR_URL', plugin_dir_url( __FILE__ ) );
+! defined( 'AIWP_SHOW_TOGGLE' ) ? define( 'AIWP_SHOW_TOGGLE', TRUE ) : FALSE;
 ! defined( 'AIWP_SHOW_INVITE' ) ? define( 'AIWP_SHOW_INVITE', TRUE ) : FALSE;
 
 /**
@@ -162,10 +163,13 @@ class Appear_In_WP {
 		wp_enqueue_script( 'jquery' );
 
 		// enqueue appear-in API library
-		wp_enqueue_script( 'appearin-library', 'http://iswebrtcready.appear.in/apiv2.js', array(), AIWP_VERSION );
+		wp_enqueue_script( 'appearin-library', '//developer.appear.in/scripts/appearin-sdk.0.0.4.min.js', array(), AIWP_VERSION );
 
 		// enqueue script for handling local interaction
 		wp_enqueue_script( 'aiwp', AIWP_DIR_URL . 'aiwp.js', array(), AIWP_VERSION );
+
+		// enqueue font-awesome CDN
+		wp_enqueue_style( 'aiwp-font-awesome', '//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css', array(), '4.0.3' );
 
 	} // end add_stylesheets_and_javascript
 
@@ -182,6 +186,8 @@ class Appear_In_WP {
 		extract( shortcode_atts( array(
 			'room' => '',
 			'type' => 'public',
+			'position' => '',
+			'height' => '700',
 		), $atts ) );
 
 		// push the shortcode defined rooom types to an array
@@ -196,58 +202,96 @@ class Appear_In_WP {
 			$custom_room_name = get_option( 'aiwp_public_room' );
 		}
 
+		// get position from shortcode, otherwise set to left
+		if ( 'bottom' == $position ) {
+			$position = 'bottom';
+		} elseif ( 'inline' != $position ) {
+			$position = 'left';
+		}
+
+		// set room height
+		if ( 'bottom' == $position ) {
+			$height = 275;
+		}
+
 		// build room selection wrapper
-		// Add styling for iconset
-		$html = '<style type="text/css">
-					#aiwp-room-type-selection div button,
-					#aiwp-room-type-selection div div button {
-						background: ' . $this->options['color'] . ';
-					}			
-					#aiwp-room-type-selection div button:hover {
-						background: ' . $this->hex_color_mod( $this->options['color'], -16 ) . ';
-					}
-				</style>';
+		// add styling for iconset
+		$text_color = $this->is_color_light( $this->options['color'] ) ? 'black' : 'white';
 
-		$html .= '<div id="aiwp-room-type-selection">';
+		$html = '<div id="aiwp-container" data-position="' . $position . '" data-room-height="' . $height . '">';
+			$html .= '<style type="text/css">
+						#aiwp-container button {
+							background: ' . $this->options['color'] . ';
+							color: ' . $text_color . ';
+						}			
+						#aiwp-container button:hover {
+							background: ' . $this->hex_color_mod( $this->options['color'], -16 ) . ';
+						}
+					</style>';
 
-			foreach ( $aiwp_room_types as $room_type ) {
+			$html .= '<div id="aiwp-room-type-selection">';
 
-				$room_button_text = isset( $atts[ $room_type . '_room_button' ] ) ? $atts[ $room_type . '_room_button' ] : ucfirst( $room_type ) . ' Room';
+				foreach ( $aiwp_room_types as $room_type ) {
+
+					$room_button_text = isset( $atts[ $room_type . '_room_button' ] ) ? $atts[ $room_type . '_room_button' ] : ucfirst( $room_type ) . ' Room';
+					
+					// display room buttons
+					$html .= '<div id="aiwp-' . $room_type . '" style="width:' . ( 100 / count( $aiwp_room_types ) ) . '%">';
+						$html .= '<button id="aiwp-select-' . $room_type . '-room" data-room-type="' . $room_type . '">' . $room_button_text . '</button>';
+					$html .= '</div>';
 				
-				// display room buttons
-				$html .= '<div id="aiwp-' . $room_type . '" style="width:' . ( 100 / count( $aiwp_room_types ) ) . '%">';
-					$html .= '<button id="aiwp-select-' . $room_type . '-room" data-room-type="' . $room_type . '">' . $room_button_text . '</button>';
-				$html .= '</div>';
-			
-			}
-
-		$html .= '</div>';
-
-		// build compatibility test result
-		$html .= '<span id="appearin-incompatibility" style="display:none;">' . apply_filters( 'aiwp_unsupported_browser_message', 'It appears your browser is not capable of displaying this content. Try connecting with Chrome, Firefox, or Opera.' ) . '</span>';
-
-		// include appearin iframe populated by API
-		$html .= '<iframe id="appearin-room" data-room-name="' . $custom_room_name . '"></iframe>';	
-
-		if ( AIWP_SHOW_INVITE ) {
-
-			$html .= '<div id="aiwp-invites" style="display:none;">';
-
-				// add social invites
-				$html .= '<div class="aiwp-invite-buttons">';
-					$html .= '<a href="#" id="aiwp-invite-facebook" class="aiwp-social" target="_blank">Invite via Facebook</a>';
-					$html .= '<a href="#" id="aiwp-invite-twitter" class="aiwp-social" target="_blank">Invite via Twitter</a>';
-					$html .= '<a href="#" id="aiwp-invite-email" class="aiwp-social" target="_blank">Invite via Email</a>';
-				$html .= '</div>';
+				}
 
 			$html .= '</div>';
 
-		}
+			// build compatibility test result
+			$html .= '<span id="appearin-incompatibility" style="display:none;">' . apply_filters( 'aiwp_unsupported_browser_message', 'It appears your browser is not capable of displaying this content. Try connecting with Chrome, Firefox, or Opera.' ) . '</span>';
 
-		$html .= '<div id="appearin-room-labels">';
-			$html .= '<div id="appearin-room-label-external"></div>';
-			$html .= '<div id="appearin-room-label"></div>';
+			// include appearin iframe populated by API
+			$html .= '<iframe id="appearin-room" data-room-name="' . $custom_room_name . '"></iframe>';	
+
+			$html .= '<div id="aiwp-controls" style="display:none;">';
+
+				if ( AIWP_SHOW_TOGGLE ) {
+
+					$html .= '<div id="aiwp-toggles">';
+
+						// add ui buttons
+						$html .= '<div class="aiwp-ui-buttons">';
+							$html .= '<a href="#" id="aiwp-minimize"><i class="fa fa-arrow-down"></i></a>';
+							$html .= '<a href="#" id="aiwp-move-bottom" ';
+								$html .= 'left' == $position ? '' : 'style="display:none;"';
+								$html .= '><i class="fa fa-columns"></i></a>';
+							$html .= '<a href="#" id="aiwp-move-left" ';
+								$html .= 'bottom' == $position ? '' : 'style="display:none;"';
+								$html .= '><i class="fa fa-columns"></i></a>';
+						$html .= '</div>';
+
+					$html .= '</div>';
+
+				}
+
+				if ( AIWP_SHOW_INVITE ) {
+
+					$html .= '<div id="aiwp-invites">';
+
+						// add social invites
+						$html .= '<div class="aiwp-invite-buttons">';
+							$html .= '<span style="width:75px;font-family:Helvetica;color: #d1d1d1;font-size: 14px;font-weight: normal;position: relative;display: inline-block;top: -.25em;">Invite via</span>';
+							$html .= '<a href="#" id="aiwp-invite-twitter" class="aiwp-social" target="_blank"><i class="fa fa-twitter"></i></a>';
+							$html .= '<a href="#" id="aiwp-invite-facebook" class="aiwp-social" target="_blank"><i class="fa fa-facebook-square"></i></a>';
+							$html .= '<a href="#" id="aiwp-invite-email" class="aiwp-social" target="_blank"><i class="fa fa-envelope"></i></a>';
+						$html .= '</div>';
+
+					$html .= '</div>';
+
+				}
+
+			$html .= '</div>';
+
 		$html .= '</div>';
+
+		$html .= '<img id="aiwp-maximize" src="' . AIWP_DIR_URL . 'appearin-logo-transparent.png" />';
 
 		return $html;
 
@@ -280,6 +324,26 @@ class Appear_In_WP {
 	 
 		return '#'.implode($rgb);
 	}
+
+	/**
+     * Returns whether or not given color is considered "light"
+     * @param string|Boolean $color
+     * @return boolean
+     * @link https://github.com/mexitek/phpColors
+     */
+    public function is_color_light( $color = FALSE ) {
+
+        // Get our color
+        $color = ($color) ? $color : $this->_hex;
+        
+        // Calculate straight from rbg
+        $r = hexdec($color[0].$color[1]);
+        $g = hexdec($color[2].$color[3]);
+        $b = hexdec($color[4].$color[5]);
+        
+        return (( $r*299 + $g*587 + $b*114 )/1000 > 130);
+        
+    }
 
 } // end class
 
