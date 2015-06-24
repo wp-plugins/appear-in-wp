@@ -60,7 +60,7 @@ if ( ! class_exists( 'WP_Side_Notice' ) ) {
 		 *
 		 * @since     1.0
 		 */
-		public function __construct( $prefix, $height = '200' ) {
+		public function __construct( $prefix, $height = 200 ) {
 
 			$this->prefix = $prefix;
 
@@ -154,7 +154,7 @@ if ( ! class_exists( 'WP_Side_Notice' ) ) {
 			update_user_meta( $current_user->ID, $this->prefix . '_user_side_notices', $user_notices );
 
 			// Set the variable that will hold the html
-			$html = '<div class="wpsn-outer-container" style="height:' . $this->height . '">';
+			$html = '<div class="wpsn-outer-container" style="height:' . $this->height . 'px">';
 			
 			// Loop though the notices
 			foreach ( $this->notices as $name => $notice ) {
@@ -200,16 +200,16 @@ if ( ! class_exists( 'WP_Side_Notice' ) ) {
 			foreach ( $dismissals as $dismissal ) {
 				$j > 1 ? $html .= '&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;&nbsp;' : FALSE;
 				if ( 'week' == $dismissal ) {
-					$html .= __( '<a href="' . wp_nonce_url( add_query_arg( array( $this->prefix . '-wpsn-action' => 'dismiss', 'notice' => $name, 'duration' => 'week' ) ), 'wpsn-notice' ) . '">Hide For One Week</a>', 'wpsn-locale' );
+					$html .= __( '<a href="' . wp_nonce_url( esc_url( add_query_arg( array( $this->prefix . '-wpsn-action' => 'dismiss', 'notice' => $name, 'duration' => 'week' ) ) ), 'wpsn-notice' ) . '">Hide For One Week</a>', 'wpsn-locale' );
 					$j ++;
 				} elseif ( 'month' == $dismissal ) {
-					$html .= __( '<a href="' . wp_nonce_url( add_query_arg( array( $this->prefix . '-wpsn-action' => 'dismiss', 'notice' => $name, 'duration' => 'month' ) ), 'wpsn-notice' ) . '">Hide For One Month</a>', 'wpsn-locale' );
+					$html .= __( '<a href="' . wp_nonce_url( esc_url( add_query_arg( array( $this->prefix . '-wpsn-action' => 'dismiss', 'notice' => $name, 'duration' => 'month' ) ) ), 'wpsn-notice' ) . '">Hide For One Month</a>', 'wpsn-locale' );
 					$j ++;
 				} elseif ( 'forever' == $dismissal ) {
-					$html .= __( '<a href="' . wp_nonce_url( add_query_arg( array( $this->prefix . '-wpsn-action' => 'dismiss', 'notice' => $name, 'duration' => 'forever' ) ), 'wpsn-notice' ) . '">Dismiss</a>', 'wpsn-locale' );
+					$html .= __( '<a href="' . wp_nonce_url( esc_url( add_query_arg( array( $this->prefix . '-wpsn-action' => 'dismiss', 'notice' => $name, 'duration' => 'forever' ) ) ), 'wpsn-notice' ) . '">Dismiss</a>', 'wpsn-locale' );
 					$j ++;
 				} elseif ( 'undismiss' == $dismissal ) {
-					$html .= __( '<a href="' . wp_nonce_url( add_query_arg( array( $this->prefix . '-wpsn-action' => 'dismiss', 'notice' => $name, 'duration' => 'undismiss' ) ), 'wpsn-notice' ) . '">Reactivate Notices</a></span>', 'wpsn-locale' );
+					$html .= __( '<a href="' . wp_nonce_url( esc_url( add_query_arg( array( $this->prefix . '-wpsn-action' => 'dismiss', 'notice' => $name, 'duration' => 'undismiss' ) ) ), 'wpsn-notice' ) . '">Reactivate Notices</a></span>', 'wpsn-locale' );
 					$j ++;
 				}
 			}
