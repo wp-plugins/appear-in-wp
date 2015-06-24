@@ -5,7 +5,7 @@ Donate link: http://vandercar.net/wp
 Tags: appear, in, video, chat, conference, webrtc, teleconference
 Requires at least: 3.1
 Tested up to: 4.2
-Stable tag: 2.5
+Stable tag: 2.6
 License: GPLv2 or later
 
 Adds appear.in rooms to your site via shortcode
@@ -91,8 +91,13 @@ Silence is golden.
 == Screenshots ==
 
 1. appear.in WordPress Settings
+2. Active appear.in Embedded Room
 
 == Changelog ==
+
+= 2.6 =
+* Redirects to app on iOS
+* Removes protocol from post room names
 
 = 2.5 =
 * Fix for hidden controls when toggling position
@@ -164,6 +169,9 @@ Silence is golden.
 * Initial Release
 
 == Upgrade Notice ==
+
+= 2.6 =
+* This update allows iOS users to click through to app!
 
 = 2.5 =
 * Fix for hidden controls when toggling position

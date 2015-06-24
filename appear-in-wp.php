@@ -3,7 +3,7 @@
  * Plugin Name: appear.in WP
  * Plugin URI: http://vandercar.net/wp/appear-in-wp
  * Description: Adds appear.in rooms to your site via shortcode
- * Version: 2.5
+ * Version: 2.6
  * Author: UaMV
  * Author URI: http://vandercar.net
  *
@@ -15,7 +15,7 @@
  * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
  * @package appear.in WP
- * @version 2.5
+ * @version 2.6
  * @author UaMV
  * @copyright Copyright (c) 2013, UaMV
  * @link http://vandercar.net/wp/appear-in-wp
@@ -26,7 +26,7 @@
  * Define constants.
  */
 
-define( 'AIWP_VERSION', '2.5' );
+define( 'AIWP_VERSION', '2.6' );
 define( 'AIWP_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'AIWP_DIR_URL', plugin_dir_url( __FILE__ ) );
 ! defined( 'AIWP_SHOW_TOGGLE' ) ? define( 'AIWP_SHOW_TOGGLE', TRUE ) : FALSE;
@@ -37,6 +37,7 @@ define( 'AIWP_DIR_URL', plugin_dir_url( __FILE__ ) );
  */
 
 require_once AIWP_DIR_PATH . 'class-aiwp-admin.php';
+require_once AIWP_DIR_PATH . 'mobile-detect.php';
 is_admin() ? require_once AIWP_DIR_PATH . 'wp-side-notice/class-wp-side-notice.php' : FALSE;
 
 /**
@@ -77,6 +78,15 @@ class Appear_In_WP {
 	 */
 	protected $options;
 
+	/**
+	 * User device detection
+	 *
+	 * @since    1.0
+	 *
+	 * @var      object
+	 */
+	protected $detect;
+
 	/*---------------------------------------------------------------------------------*
 	 * Constructor
 	 *---------------------------------------------------------------------------------*/
@@ -90,6 +100,9 @@ class Appear_In_WP {
 
 		// retrieve custom plugin settings
 		$this->options = get_option( 'aiwp_settings', array() );
+
+		// get user device info
+		$this->detect = new Mobile_Detect;
 
 		// if admin area, get instance of admin class
 		if ( is_admin() ) { Appear_In_WP_Admin::get_instance(); }
@@ -188,6 +201,7 @@ class Appear_In_WP {
 			'type' => 'public',
 			'position' => '',
 			'height' => '700',
+			'source' => 'shortcode',
 		), $atts ) );
 
 		// push the shortcode defined rooom types to an array
@@ -218,7 +232,8 @@ class Appear_In_WP {
 		// add styling for iconset
 		$text_color = $this->is_color_light( $this->options['color'] ) ? 'black' : 'white';
 
-		$html = '<div id="aiwp-container" data-position="' . $position . '" data-room-height="' . $height . '">';
+		$html = '<div id="aiwp-container" data-source="' . $source . '" data-position="' . $position . '" data-room-height="' . $height . '"';
+			$html .= $this->detect->isiOS() ? ' class="aiwp-ios">' : '>';
 			$html .= '<style type="text/css">
 						#aiwp-container button {
 							background: ' . $this->options['color'] . ';
@@ -235,10 +250,17 @@ class Appear_In_WP {
 
 					$room_button_text = isset( $atts[ $room_type . '_room_button' ] ) ? $atts[ $room_type . '_room_button' ] : ucfirst( $room_type ) . ' Room';
 					
-					// display room buttons
-					$html .= '<div id="aiwp-' . $room_type . '" style="width:' . ( 100 / count( $aiwp_room_types ) ) . '%">';
-						$html .= '<button id="aiwp-select-' . $room_type . '-room" data-room-type="' . $room_type . '">' . $room_button_text . '</button>';
-					$html .= '</div>';
+					if ( $this->detect->isiOS() ){
+						// display room buttons
+						$html .= '<a href="#" id="aiwp-' . $room_type . '" style="display:inline-block;width:' . ( 100 / count( $aiwp_room_types ) ) . '%">';
+							$html .= '<button id="aiwp-select-' . $room_type . '-room" data-room-type="' . $room_type . '">' . $room_button_text . '</button>';
+						$html .= '</a>';
+					} else {
+						// display room buttons
+						$html .= '<div id="aiwp-' . $room_type . '" style="width:' . ( 100 / count( $aiwp_room_types ) ) . '%">';
+							$html .= '<button id="aiwp-select-' . $room_type . '-room" data-room-type="' . $room_type . '">' . $room_button_text . '</button>';
+						$html .= '</div>';
+					}
 				
 				}
 
@@ -357,6 +379,7 @@ function aiwp_include( $args ) {
 	$aiwp_defaults = array(
 		'room' => '',
 		'type' => 'public',
+		'source' => 'include',
 		);
 
 	$args = wp_parse_args( $args, $aiwp_defaults );

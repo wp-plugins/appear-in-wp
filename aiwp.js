@@ -15,8 +15,8 @@ jQuery(document).ready(function( $ ) {
 	if ( aiwpCompatible ) {
 		$('#webrtc-compatability-tester').hide();
 	} else {
-	    $('#appearin-incompatibility').show();
-        $('#aiwp-room-type-selection').hide();
+	    $("#aiwp-container:not('.aiwp-ios') #appearin-incompatibility").show();
+        $("#aiwp-container:not('.aiwp-ios') #aiwp-room-type-selection").hide();
 	}
    
     if ( '' != aiRoom ) {
@@ -25,22 +25,36 @@ jQuery(document).ready(function( $ ) {
 		});
 
     	// hide room type selection
-    	$('#aiwp-room-type-selection').hide();
+    	$("#aiwp-container:not('.aiwp-ios') #aiwp-room-type-selection").hide();
 
     	// launch room
-    	launchAppearInRoom( aiRoom, 'invite' );
+    	if ( $('.aiwp-ios').length ) {
+    		window.location.replace('http://'+aiRoom.replace('?lite',''));
+    	} else {
+    		launchAppearInRoom( aiRoom );
+    	}
     } // end if
 
+    var roomURL = window.location.host + window.location.pathname;
+    var roomName = $('#appearin-room').attr('data-room-name');
+
+    // Handle Room Assignment on iOS
+	$('#aiwp-container.aiwp-ios #aiwp-room-type-selection #aiwp-post').attr('href','http://appear.in/'+roomURL);
+	$('#aiwp-container.aiwp-ios #aiwp-room-type-selection #aiwp-public').attr('href','http://appear.in/'+roomName);
+	aiwp.getRandomRoomName().then(function(randroomName) {
+		$('#aiwp-container.aiwp-ios #aiwp-room-type-selection #aiwp-private').attr('href','http://appear.in/'+randroomName);
+	});
+
 	// Handle Room Selection
-	$('#aiwp-select-public-room,#aiwp-select-private-room,#aiwp-select-post-room').click( function () {
+	$("#aiwp-container:not('.aiwp-ios') #aiwp-select-public-room,#aiwp-container:not('.aiwp-ios') #aiwp-select-private-room,#aiwp-container:not('.aiwp-ios') #aiwp-select-post-room").click( function () {
 			
 		var roomType = $(this).data('room-type');
 
 		if ( 'post' == roomType ) {
-			var roomURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
-			launchAppearInRoom( roomURL );
+			
+			launchAppearInRoom( roomURL );		
 		} else if ( 'public' == roomType ) {
-			var roomName = $('#appearin-room').attr('data-room-name');
+
 			launchAppearInRoom( roomName );
 		} else if ( 'private' == roomType ) {
 			aiwp.getRandomRoomName().then(function(roomName) {
@@ -50,7 +64,7 @@ jQuery(document).ready(function( $ ) {
 
 	});
 
-	function launchAppearInRoom( randomString, origin ) {
+	function launchAppearInRoom( randomString ) {
 		if ( randomString.indexOf('appear.in') >= 0 ) {
 			var roomName = randomString.replace('?lite','');
 		} else {
